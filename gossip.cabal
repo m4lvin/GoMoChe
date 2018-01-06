@@ -13,7 +13,7 @@ library
                   , Gossip.Strengthening
                   , Gossip.Tree
                   , Gossip.Visual
-  other-modules:    Gossip.Internal
+                  , Gossip.Internal
   hs-source-dirs:   src
   build-depends:    base >= 4.7 && < 5
                   , containers

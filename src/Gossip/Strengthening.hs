@@ -3,63 +3,58 @@ module Gossip.Strengthening where
 import Control.Monad
 import Data.List
 
-import Gossip
 import Gossip.LocalProto
 import Gossip.General
 
-type Strengthening = Int -> Protocol -> Protocol
+type Strengthening = Protocol -> Protocol
 
--- | Syntactic strengthenings
-strengHard, strengSoft, strengStep :: Strengthening
-strengHard k f (a,b) = Conj [ f (a,b) , K    a $ Box (Call a b) (Dia (protoTerm k f) (allExperts k)) ]
-strengSoft k f (a,b) = Conj [ f (a,b) , HatK a $ Box (Call a b) (Dia (protoTerm k f) (allExperts k)) ]
-strengStep k f (a,b) = Conj [ f (a,b) , HatK a $ Box (Call a b) (Disj [allExperts k, protoCanGoOn k f]) ]
+-- | Syntactic strengthenings: ◾ ◆ ◽ ◇
+strengHard, strengSoft, strengStepHard, strengStepSoft :: Strengthening
+strengHard     p (a,b) = Conj [ p (a,b) , K    a p $ Box (Call a b) (Dia (protoTerm p) allExperts) ]
+strengSoft     p (a,b) = Conj [ p (a,b) , HatK a p $ Box (Call a b) (Dia (protoTerm p) allExperts) ]
+strengStepHard p (a,b) = Conj [ p (a,b) , K    a p $ Box (Call a b) (Disj [allExperts, protoCanGoOn p]) ]
+strengStepSoft p (a,b) = Conj [ p (a,b) , HatK a p $ Box (Call a b) (Disj [allExperts, protoCanGoOn p]) ]
 
--- | Syntactic strenghtenings with explicit protocol in K operator
-strengHardExp, strengSoftExp, strengStepExp :: Strengthening
-strengHardExp k f (a,b) = Conj [ f (a,b) , Kp    f a $ Box (Call a b) (Dia (protoTerm k f) (allExperts k)) ]
-strengSoftExp k f (a,b) = Conj [ f (a,b) , HatKp f a $ Box (Call a b) (Dia (protoTerm k f) (allExperts k)) ]
-strengStepExp k f (a,b) = Conj [ f (a,b) , HatKp f a $ Box (Call a b) (Disj [allExperts k, protoCanGoOn k f]) ]
-
--- | Selfreferential strengthenings
-selfrefHard, selfrefSoft, selfrefStep :: Strengthening
-selfrefHard k f (a,b) = Conj [ f (a,b) , Kp    (selfrefStep k f) a $ Box (Call a b) (Dia (protoTerm k f) (allExperts k)) ]
-selfrefSoft k f (a,b) = Conj [ f (a,b) , HatKp (selfrefStep k f) a $ Box (Call a b) (Dia (protoTerm k f) (allExperts k)) ]
-selfrefStep k f (a,b) = Conj [ f (a,b) , HatKp (selfrefStep k f) a $ Box (Call a b) (Disj [allExperts k, protoCanGoOn k f]) ]
-
-statistics :: Protocol -> GossipModel -> Point -> (Int,Int)
-statistics proto gomo (g,sigma) =
+statistics :: Protocol -> State -> (Int,Int)
+statistics proto (g,sigma) =
   (length succSequ, length sequ - length succSequ) where
-    sequ = sequences gomo (g,sigma) proto \\ [[]]
+    sequ = sequences proto (g,sigma) \\ [[]]
     succSequ = filter (isSuccSequence (g,sigma)) sequ
 
-strengthenEnough :: Int -> Strengthening -> Protocol -> GossipModel -> Point -> IO ()
-strengthenEnough k streng proto gomo point = do
-  let (suc,unsuc) = statistics proto gomo point
-  putStrLn $ show k ++ " " ++ ppPoint point ++ "\t" ++ show (suc,unsuc)
+strengthenEnough :: Int -> Strengthening -> Protocol -> State -> IO ()
+strengthenEnough k streng proto state = do
+  let (suc,unsuc) = statistics proto state
+  putStrLn $ show k ++ " " ++ ppState state ++ "\t" ++ show (suc,unsuc)
   when (suc > 0 && unsuc > 0) $ do
     putStr "."
-    let newproto = streng (length $ agentsOf (fst point)) proto
-    let newgomo = gomo {name = name gomo ++ "+", protoCK = proto}
-    strengthenEnough (k+1) streng newproto newgomo point
+    let newproto = streng proto
+    strengthenEnough (k+1) streng newproto state
 
--- Statistics about all graphs for k agents, using LNS and its thinkDifferent strengthening --
+-- strengthenEnough statistics for all graphs with k agents
 allStatistics :: Int -> IO ()
 allStatistics k =
   mapM_
     (\(str,streng) -> do
       putStrLn $ "\n=====" ++ str ++ "=====";
       mapM_
-        (\g -> strengthenEnough 0 streng lns anyCK (g, []))
+        (\g -> strengthenEnough 0 streng lns (g, []))
         (solvableInits localLns k)
     )
-    [ ("hard"       , strengHard   )
-    , ("soft"       , strengSoft   )
-    , ("step"       , strengStep   )
-    , ("hardExp"    , strengHardExp)
-    , ("softExp"    , strengSoftExp)
-    , ("stepExp"    , strengStepExp)
-    , ("selfrefHard", selfrefHard  )
-    , ("selfrefSoft", selfrefSoft  )
-    , ("selfrefStep", selfrefStep  )
+    [ ("stepSoft"       , strengStepSoft )
+    , ("stepHard"       , strengStepHard )
+    , ("soft"           , strengSoft     )
+    , ("hard"           , strengHard     )
     ]
+
+diamondProto :: Protocol
+diamondProto (a,b) = K a lns $ Conj [ lns (a,b), Disj [clause1,clause2a,clause2b,clause3] ] where
+  noCallsMade = ForallAg (\i -> ForallAg (\j -> if i == j then Top else Neg $ S i j))
+  oneCallMade = ExistsAg (\i -> ExistsAg (\j -> Conj [
+    S i j, S j i, ForallAg (\k -> if k `elem` [i,j] then Top else knowsOnlyOwn k)
+    ]))
+  clause1 = Conj [knowsOnlyOwn a, Disj [noCallsMade, oneCallMade]]
+  clause2a = ExistsAg (\k -> ExistsAg (\l ->
+    if a /= k && k /= l && a /= l then Conj [S a k, S a l, Neg $ S a b] else Bot))
+  clause2b = HatK a lns $ expert b
+  clause3 = ForallAg knowsAtLeastTwo
+  knowsAtLeastTwo k =  ExistsAg (\l -> ExistsAg (\m -> if l /= m then Conj [S k l, S k m] else Bot))

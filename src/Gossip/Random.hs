@@ -9,30 +9,37 @@ import Data.List
 import qualified Data.IntSet as IntSet
 import qualified Data.IntMap as IntMap
 
-newtype ArbitraryInitialState = ArbIS State deriving (Eq,Ord)
+newtype ArbitraryInitialGG = ArbIGG Graph deriving (Eq,Ord)
 
-instance Show ArbitraryInitialState where
-  show (ArbIS s) = ppState s
+instance Show ArbitraryInitialGG where
+  show (ArbIGG g) = ppGraph g
 
-instance Arbitrary ArbitraryInitialState where
+instance Arbitrary ArbitraryInitialGG where
   arbitrary = do
-    n <- choose (3,4::Int)
+    -- n <- choose (3,4::Int)
+    n <- choose (3,3::Int)
     let ags = [(0::Int)..(n-1)]
     phonebooks <- mapM (\i -> sublistOf ags >>= \rest -> fmap (sort.nub) (return $ i : rest)) ags
     let nRel = IntMap.fromList [ (k, IntSet.fromList $ phonebooks !! k ) | k <- [0..(n-1)] ]
     let sRel = ident n
-    return $ ArbIS (nRel,sRel)
+    return $ ArbIGG (nRel,sRel)
+  -- shrinking by deleting N-edges:
+  shrink (ArbIGG (nRel,sRel)) = [ArbIGG (newNrel,sRel) | newNrel <- map convertBack newNs] where
+    nList = (map (fmap IntSet.toList) . IntMap.toList) nRel
+    newNs = [ update x (delete n ns) nList | (x,ns) <- nList, n <- ns, n /= x ]
+    update k newval = map (\(x,oldval) -> if x == k then (x,newval) else (x,oldval))
+    convertBack = IntMap.fromList . map (fmap IntSet.fromList)
 
-newtype ArbitraryPointAgent = ArbPA (Point, Agent) deriving (Eq,Ord)
+newtype ArbitraryPointAgent = ArbPA (State, Agent) deriving (Eq,Ord)
 
 instance Show ArbitraryPointAgent where
-  show (ArbPA ((s,h),a)) = ppState s ++ " " ++ show h ++ " " ++ show a
+  show (ArbPA ((g,h),a)) = ppGraph g ++ " " ++ show h ++ " " ++ show a
 
 instance Arbitrary ArbitraryPointAgent where
   arbitrary = do
-    (ArbIS state) <- arbitrary
-    sequ <- elements (sequences lnsCK (state,[]) lns)
+    (ArbIGG g) <- arbitrary
+    sequ <- elements (sequences lns (g,[]))
     time <- choose (0,length sequ)
-    let history = take time sequ
+    let sigma = take time sequ
     let agent = 0
-    return $ ArbPA ((state, history), agent)
+    return $ ArbPA ((g, sigma), agent)

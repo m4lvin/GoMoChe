@@ -39,7 +39,7 @@ runAndWait command = do
   _ <- waitForProcess pid
   return ()
 
-instance DotAble State where
+instance DotAble Graph where
   dot (n,s) = digraph' $ do
     mapM_ (\x -> node (show x) [toLabel (show x)]) (agentsOf n)
     let sDoubles = [ (x,y) | x <- agentsOf n, y <- IntSet.toList (s `at` x), x < y, x `IntSet.member` (s `at` y) ]
@@ -63,8 +63,8 @@ showCallShort (x,y) = [ ['a' ..] !! x, ['a'..] !! y ]
 -- - maximum history length to be shown
 -- - history length until which the nodes should be ranked on the same level
 -- - the execution tree, generated with tree or norepTree
-dotTreeWith :: [Agent] -> Int -> Int -> ExecutionTree -> GenGV.DotGraph String
-dotTreeWith drawAgents showLimit rankLimit tpc@(Node (g,_) _) =
+dotTreeWith :: [Agent] -> Int -> Int -> Protocol -> ExecutionTree -> GenGV.DotGraph String
+dotTreeWith drawAgents showLimit rankLimit proto tpc@(Node (g,_) _) =
   GenGV.DotGraph { GenGV.strictGraph = False
                  , GenGV.directedGraph = True
                  , GenGV.graphID = Just (Str $ pack "G")
@@ -76,11 +76,11 @@ dotTreeWith drawAgents showLimit rankLimit tpc@(Node (g,_) _) =
                                    , GenGV.subGraphID = Just (Str (pack $ "subgraph-" ++ myNodeID n))
                                    , GenGV.subGraphStmts = Seq.fromList $ stmtLoop t }
                      | (_,t@(Node (_,nexthist) _)) <- take 100 cts, length nexthist <= showLimit ]
-      , map GenGV.DN [ DotNode (myNodeID n) [toLabel (ppStateShort (uncurry calls n))] ]
+      , map GenGV.DN [ DotNode (myNodeID n) [toLabel (ppGraphShort (uncurry calls n))] ]
       , map GenGV.DE $
             [ DotEdge (myNodeID n) (myNodeID n') [toLabel (showCallShort c)] | (c,Node n'@(_,nexthist) _) <- take 100 cts, length nexthist <= showLimit ] -- calls arrows
         ++  [ DotEdge (myNodeID n) (myNodeID n') [toLabel (['a'..] !! a), Dir NoDir, Style [SItem Dashed []]] -- epistemic edges
-            | a <- agentsOf (fst n), n' <- epistAlt a lnsCK n, n < n', a `elem` drawAgents ] -- NOTE: hardcoded lnsCK
+            | a <- agentsOf (fst n), n' <- epistAlt a proto n, n < n', a `elem` drawAgents ]
       ]
     stmtRanks :: [GenGV.DotStatement String]
     stmtRanks = concat [ rankTheSame [(g,h) | h <- hs] | hs <- groupedSequences ] where
@@ -88,7 +88,7 @@ dotTreeWith drawAgents showLimit rankLimit tpc@(Node (g,_) _) =
       allSequences = filter ((<= showLimit) . length) $ filter ((<= rankLimit) . length) $ sequencesOf tpc
       sequencesOf :: ExecutionTree -> [Sequence]
       sequencesOf (Node _ cts) = [] : [ c:h | (c, tpc') <- take 100 cts, h <- sequencesOf tpc' ]
-      rankTheSame :: [Point] -> [GenGV.DotStatement String]
+      rankTheSame :: [State] -> [GenGV.DotStatement String]
       rankTheSame ns = [ GenGV.SG  GenGV.DotSG  { GenGV.isCluster = False
                                                 , GenGV.subGraphID = Just (Str (pack $ "ranking-" ++ show (length (snd $ head ns))))
                                                 , GenGV.subGraphStmts = Seq.fromList $
@@ -96,12 +96,12 @@ dotTreeWith drawAgents showLimit rankLimit tpc@(Node (g,_) _) =
                                                         [ GenGV.DN $ DotNode (myNodeID n') [] | n' <- ns ]
                                                 } ]
 
-dispTreeWith :: [Agent] -> Int -> Int -> ExecutionTree -> IO ()
-dispTreeWith drawAgents showLimit rankLimit t = dispDot (drawAgents,showLimit,rankLimit,t)
+dispTreeWith :: [Agent] -> Int -> Int -> Protocol -> ExecutionTree -> IO ()
+dispTreeWith drawAgents showLimit rankLimit proto t = dispDot (drawAgents,showLimit,rankLimit,proto,t)
 
-instance DotAble ([Agent],Int,Int,ExecutionTree) where
-  dot (drawAgents,showLimit,rankLimit,t) = dotTreeWith drawAgents showLimit rankLimit t
+instance DotAble ([Agent],Int,Int,Protocol,ExecutionTree) where
+  dot (drawAgents,showLimit,rankLimit,proto,t) = dotTreeWith drawAgents showLimit rankLimit proto t
 
--- | By default we show no epistemic edges, show up to 10 calls and rank the first 2 steps
+-- | By default we show no epistemic edges, show up to 10 calls, rank the first 2 steps and consider lns
 instance DotAble ExecutionTree where
-  dot = dotTreeWith [] 10 2
+  dot = dotTreeWith [] 10 2 lns
