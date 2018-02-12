@@ -33,3 +33,4 @@ test-suite results
                   , gossip
                   , hspec
                   , QuickCheck
+                  , silently

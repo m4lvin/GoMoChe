@@ -1,4 +1,3 @@
-
 module Gossip.Random where
 
 import Gossip
@@ -9,10 +8,10 @@ import Data.List
 import qualified Data.IntSet as IntSet
 import qualified Data.IntMap as IntMap
 
-newtype ArbitraryInitialGG = ArbIGG Graph deriving (Eq,Ord)
+newtype ArbitraryInitialGG = ArbIGG Graph
 
 instance Show ArbitraryInitialGG where
-  show (ArbIGG g) = ppGraph g
+  show (ArbIGG g) = "ArbIGG (parseGraph \"" ++ ppGraph g ++ "\")"
 
 instance Arbitrary ArbitraryInitialGG where
   arbitrary = do
@@ -30,10 +29,12 @@ instance Arbitrary ArbitraryInitialGG where
     update k newval = map (\(x,oldval) -> if x == k then (x,newval) else (x,oldval))
     convertBack = IntMap.fromList . map (fmap IntSet.fromList)
 
-newtype ArbitraryPointAgent = ArbPA (State, Agent) deriving (Eq,Ord)
+newtype ArbitraryPointAgent = ArbPA (State, Agent)
 
 instance Show ArbitraryPointAgent where
-  show (ArbPA ((g,h),a)) = ppGraph g ++ " " ++ show h ++ " " ++ show a
+  show (ArbPA ((g,h),a)) = concat [ "ArbPA ((parseGraph \"", ppGraph g
+                                  , "\", parseSequence \"", ppSequence h
+                                  , "\"),", show a, ")" ]
 
 instance Arbitrary ArbitraryPointAgent where
   arbitrary = do

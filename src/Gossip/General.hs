@@ -103,22 +103,14 @@ ppState :: State -> String
 ppState (g,h) = ppRel (fst g)
   ++ if null h then [] else " " ++ ppSequence h ++ "  " ++ ppGraph (calls g h)
 
-allCalls :: State -> [Call]
-allCalls point = [ (x,y) | x <- agentsOf (fst point), y <- agentsOf (fst point), x /= y ]
-
 possibleCalls :: State -> [Call]
 possibleCalls state =
   [ (x,y) | (x,setYs) <- IntMap.toList (fst $ currentGraph state)
           , y <- IntSet.toList setYs
           , x /= y ]
 
-consideredCalls :: Protocol -> State -> [Call]
-consideredCalls proto state = concatMap
-  (\(x,y) -> [ (x,y) | eval state (proto (x,y)) ]) (possibleCalls state)
-
 allowedCalls :: Protocol -> State -> [Call]
-allowedCalls proto state = concatMap
-  (\(x,y) -> [ (x,y) | eval state (proto (x,y)) ]) (possibleCalls state)
+allowedCalls proto state = filter (eval state . proto) (possibleCalls state)
 
 localSameFor :: Agent -> Graph -> Graph -> Bool
 localSameFor a s s' = (fst s `at` a) == (fst s' `at` a) && (snd s `at` a) == (snd s' `at` a)
@@ -147,7 +139,7 @@ epistAlt a proto (g, history) =
        -- which are allowed according to the protocol that is CK
        else [ (g',cs'++[altevent])
               | (g',cs') <- epistAlt a proto (g,prev)
-              , altevent <- consideredCalls proto (g',cs')
+              , altevent <- allowedCalls proto (g',cs')
               , not $ a `isin` altevent ]
 
 -- Semantics --
@@ -201,14 +193,14 @@ protoStep proto =
       else Test Bot
   ))
 
+isWeaklySuccForm :: Protocol -> Form
+isWeaklySuccForm proto = Dia (protoTerm proto) allExperts
+
 isStronglySuccForm :: Protocol -> Form
 isStronglySuccForm proto = Box (protoTerm proto) allExperts
 
-isStronglyUnsucFor :: Protocol -> Form
-isStronglyUnsucFor proto = Box (protoTerm proto) (Neg allExperts)
-
-isWeaklySuccForm :: Protocol -> Form
-isWeaklySuccForm proto = Dia (protoTerm proto) allExperts
+isStronglyUnsuccForm :: Protocol -> Form
+isStronglyUnsuccForm proto = Box (protoTerm proto) (Neg allExperts)
 
 sequences :: Protocol -> State -> [Sequence]
 sequences proto (g,sigma)
@@ -230,6 +222,6 @@ texCompareSequences state protos = putStr . wrap . texify $ compareSequences sta
   texify :: [(Sequence,[Bool])] -> String
   texify = concatMap (\(s,list) -> ppSequence s ++ " & " ++ intercalate " & " (map (booltex (isSuccSequence state s)) list) ++ " \\\\\n")
   --
-  booltex _     False = "            "
+  booltex _     False = "  "
   booltex True  True  = "$\\checkmark$"
-  booltex False True  = "$\\times$    "
+  booltex False True  = "$\\times$"

@@ -27,10 +27,17 @@ type Call = (Agent,Agent)
 type Sequence = [Call]
 
 ppCall :: Call -> String
-ppCall (x,y) = show x ++ "→" ++ show y
+ppCall (x,y) = show x ++ show y
+
+parseCall :: String -> Call
+parseCall [x,y] = (read [x], read [y])
+parseCall foo   = error $ "This is not a call: " ++ show foo
 
 ppSequence :: Sequence -> String
 ppSequence = intercalate ";" . map ppCall
+
+parseSequence :: String -> Sequence
+parseSequence = map parseCall . splitWhere ';'
 
 -- | Is this agent involved in this call?
 isin :: Agent -> Call -> Bool

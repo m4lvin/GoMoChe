@@ -8,7 +8,7 @@ import Gossip
 import Gossip.LocalProto
 import Gossip.General
 
-data ExecutionTree = Node State [(Call,ExecutionTree)] deriving (Eq,Ord)
+data ExecutionTree = Node State [(Call,ExecutionTree)] deriving (Eq)
 
 instance ProvidesAgentSet ExecutionTree where
   agentsOf (Node n _) = agentsOf $ fst n
