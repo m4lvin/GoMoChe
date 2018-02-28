@@ -215,13 +215,3 @@ compareSequences :: State -> [Protocol] -> [(Sequence,[Bool])]
 compareSequences s protos =
   [ (sequ, [ sequ `elem` sequences p s | p <- protos ]) | sequ <- allsequs ] where
     allsequs = sort $ nub $ concat [sequences p s | p <- protos]
-
-texCompareSequences :: State -> [Protocol] -> IO ()
-texCompareSequences state protos = putStr . wrap . texify $ compareSequences state protos where
-  wrap s = "\\begin{tabular}{ll" ++ replicate (length protos) 'l' ++ "}\n" ++ s ++ "\\end{tabular}\n"
-  texify :: [(Sequence,[Bool])] -> String
-  texify = concatMap (\(s,list) -> ppSequence s ++ " & " ++ intercalate " & " (map (booltex (isSuccSequence state s)) list) ++ " \\\\\n")
-  --
-  booltex _     False = "  "
-  booltex True  True  = "$\\checkmark$"
-  booltex False True  = "$\\times$"

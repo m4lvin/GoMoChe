@@ -49,25 +49,25 @@ findInTree p n@(Node np cs)
                   [thisn] -> Just thisn
                   _ -> error "Point found twice in the same tree!"
 
--- | Hard Uniform Backward Reasoning
-hardUBR :: Protocol -> ExecutionTree -> ExecutionTree
-hardUBR proto fullTree = hardUBR' fullTree where
+-- | Hard Uniform Backward Defoliation
+hardUBD :: Protocol -> ExecutionTree -> ExecutionTree
+hardUBD proto fullTree = hardUBD' fullTree where
   -- keep fullTree constant so we can still findInTree if epistAlt in other branches!
-  hardUBR' (Node p cs) = Node p $ concatMap purge cs where
+  hardUBD' (Node p cs) = Node p $ concatMap purge cs where
     purge (c@(a,b), newsubTree) =
-      [ (c, hardUBR' newsubTree) | not $ any (toBeRemovedAt (a,b)) (epistAlt a proto p) ]
+      [ (c, hardUBD' newsubTree) | not $ any (toBeRemovedAt (a,b)) (epistAlt a proto p) ]
     toBeRemovedAt (a,b) (g,sigma') =
       isJust (findInTree (g,sigma'++[(a,b)]) fullTree)
       && isTerminal (fromJust $ findInTree (g,sigma'++[(a,b)]) fullTree)
       && eval (g,sigma'++[(a,b)]) (Neg allExperts)
 
--- | Soft Uniform Backward Reasoning
-softUBR :: Protocol -> ExecutionTree -> ExecutionTree
-softUBR proto fullTree = softUBR' fullTree where
+-- | Soft Uniform Backward Defoliation
+softUBD :: Protocol -> ExecutionTree -> ExecutionTree
+softUBD proto fullTree = softUBD' fullTree where
   -- keep fullTree constant so we can still findInTree if epistAlt in other branches!
-  softUBR' (Node p cs) = Node p $ concatMap purge cs where
+  softUBD' (Node p cs) = Node p $ concatMap purge cs where
     purge (c@(a,b), newsubTree) =
-      [ (c, softUBR' newsubTree) | any (toBeKept (a,b)) (epistAlt a proto p) ]
+      [ (c, softUBD' newsubTree) | any (toBeKept (a,b)) (epistAlt a proto p) ]
     toBeKept (a,b) (g,sigma') =
       isJust (findInTree (g,sigma'++[(a,b)]) fullTree)
       && (  not (isTerminal (fromJust $ findInTree (g,sigma'++[(a,b)]) fullTree))

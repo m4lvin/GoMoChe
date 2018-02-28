@@ -1,10 +1,18 @@
 name:          gossip
 version:       0.1.0.0
+synopsis:      Explicit Epistemic Model Checking for Dynamic Gossip
+description:   See README.md for related references.
+homepage:      https://github.com/m4lvin/gossip
+license:       GPL-3
+license-file:  LICENSE
+author:        Malvin Gattinger
+maintainer:    malvin@w4eg.de
+category:      Logic
 build-type:    Simple
 cabal-version: >= 1.8
 
 library
-  ghc-options:      -Wall -O2 -fobject-code
+  ghc-options:      -Wall
   exposed-modules:  Gossip
                   , Gossip.Examples
                   , Gossip.General
@@ -27,10 +35,22 @@ library
 test-suite results
   type:             exitcode-stdio-1.0
   main-is:          results.lhs
-  ghc-options:      -Wall -O2 -threaded -rtsopts -with-rtsopts=-N
+  ghc-options:      -Wall
   hs-source-dirs:   test
   build-depends:    base
                   , gossip
                   , hspec
                   , QuickCheck
                   , silently
+
+benchmark tables
+  ghc-options:      -Wall
+  hs-source-dirs:   bench
+  main-is:          tables.hs
+  type:             exitcode-stdio-1.0
+  build-depends:    base >= 4.7 && < 5
+                  , gossip
+
+source-repository head
+  type:             git
+  location:         https://github.com/m4lvin/gossip.git

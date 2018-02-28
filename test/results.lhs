@@ -138,15 +138,15 @@ main = hspec $ do
       \(ArbIGG g) ->
         sequences (strengSoft lns) (g,[]) == sequences (strengStepSoft $ strengSoft lns) (g,[])
 
-  describe "Uniform Backward Reasoning (this will take a while)" $ do
-    prop "hardUBR === strengStepHard" $
-      \(ArbIGG g) -> hardUBR lns (tree lns (g,[])) === tree (strengStepHard lns) (g,[])
-    prop "hardUBR . hardUBR === strengStepHard . strengStepHard" $
-      \(ArbIGG g) -> hardUBR lns (hardUBR lns (tree lns (g,[]))) === tree (strengStepHard $ strengStepHard lns) (g,[])
-    prop "softUBR === strengStepSoft" $
-      \(ArbIGG g) -> softUBR lns (tree lns (g,[])) === tree (strengStepSoft lns) (g,[])
-    prop "softUBR . softUBR === strengStepSoft . strengStepSoft" $
-      \(ArbIGG g) -> softUBR lns (softUBR lns (tree lns (g,[]))) === tree (strengStepSoft $ strengStepSoft lns) (g,[])
+  describe "Uniform Backward Defoliation (this will take a while)" $ do
+    prop "hardUBD === strengStepHard" $
+      \(ArbIGG g) -> hardUBD lns (tree lns (g,[])) === tree (strengStepHard lns) (g,[])
+    prop "hardUBD . hardUBD === strengStepHard . strengStepHard" $
+      \(ArbIGG g) -> hardUBD lns (hardUBD lns (tree lns (g,[]))) === tree (strengStepHard $ strengStepHard lns) (g,[])
+    prop "softUBD === strengStepSoft" $
+      \(ArbIGG g) -> softUBD lns (tree lns (g,[])) === tree (strengStepSoft lns) (g,[])
+    prop "softUBD . softUBD === strengStepSoft . strengStepSoft" $
+      \(ArbIGG g) -> softUBD lns (softUBD lns (tree lns (g,[]))) === tree (strengStepSoft $ strengStepSoft lns) (g,[])
 
 
 -- | check that epistAlt describes a reflexive, transitive, symmetric relations
