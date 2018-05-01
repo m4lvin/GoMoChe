@@ -78,6 +78,9 @@ relFromList :: [[Agent]] -> Relation
 relFromList phonebooks =
   IntMap.fromList [ (k, IntSet.fromList $ phonebooks !! k ) | k <- [0..(length phonebooks-1)] ]
 
+relToPairs :: Relation -> [(Agent,Agent)]
+relToPairs rel = [ (x,y) | x <- IntMap.keys rel, y <- IntSet.elems (rel IntMap.! x) ]
+
 sizeOfGraph :: Graph -> Int
 sizeOfGraph (nRel,_) = numAg + numN  where
   numAg = length nRel

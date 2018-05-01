@@ -97,6 +97,7 @@ main = hspec $ do
     describe "nExample" $ do
       it "LNS◇◇◇◇◇ (4,8)" $ statistics (finiteIterate 5 strengStepSoft lns) (nExample,[]) `shouldBe` (4,8)
       it "LNS◽◽◽◽  (0,0)" $ statistics (finiteIterate 4 strengStepHard lns) (nExample,[]) `shouldBe` (0,0)
+      it "LNS◆ == LNS◆◆"  $ let f k = sequences (finiteIterate k strengSoft lns) (nExample,[]) in f 1 `shouldBe` f 2
 
     describe "diamondExample" $ do
       it "LNS      (48,44)" $ statistics lns                                  (diamondExample,[]) `shouldBe` (48,44)
