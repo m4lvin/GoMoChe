@@ -14,6 +14,7 @@ cabal-version: >= 1.8
 library
   ghc-options:      -Wall
   exposed-modules:  Gossip
+                  , Gossip.Caas
                   , Gossip.Examples
                   , Gossip.General
                   , Gossip.LocalProto

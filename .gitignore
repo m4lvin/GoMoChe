@@ -23,3 +23,6 @@ cabal.project.local
 *.log
 *.fdb_latexmk
 *-table.tex
+*.out
+*.synctex.gz
+*.synctex.gz(busy)

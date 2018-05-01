@@ -58,6 +58,9 @@ isTotal r = r == total (IntMap.size r)
 isIdent :: Relation -> Bool
 isIdent r = r == ident (IntMap.size r)
 
+isInitial :: Graph -> Bool
+isInitial = isIdent . snd
+
 totalInit :: Int -> Graph
 totalInit k = (total k, ident k)
 
@@ -68,12 +71,17 @@ lineInit k = (IntMap.fromList $ [ (a,IntSet.fromList [a,a+1]) | a <- [0..(k-2)] 
 exampleFromList :: [[Agent]] -> Graph
 exampleFromList phonebooks = (nRel, sRel) where
   n = length phonebooks
-  nRel = IntMap.fromList [ (k, IntSet.fromList $ phonebooks !! k ) | k <- [0..(n-1)] ]
+  nRel = relFromList phonebooks
   sRel = ident n
 
 relFromList :: [[Agent]] -> Relation
 relFromList phonebooks =
   IntMap.fromList [ (k, IntSet.fromList $ phonebooks !! k ) | k <- [0..(length phonebooks-1)] ]
+
+sizeOfGraph :: Graph -> Int
+sizeOfGraph (nRel,_) = numAg + numN  where
+  numAg = length nRel
+  numN = IntMap.foldrWithKey (\x ys -> (+) $ IntSet.size (IntSet.delete x ys)) 0 nRel
 
 -- | All initial graphs for k agents
 allInits :: Int -> [Graph]

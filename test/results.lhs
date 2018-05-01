@@ -4,6 +4,7 @@
 module Main where
 
 import Gossip
+import Gossip.Caas
 import Gossip.Examples
 import Gossip.General
 import Gossip.LocalProto
@@ -53,6 +54,14 @@ main = hspec $ do
       (try (silence . showTreeUpToDecision . tree lns $ (threeExample,[])) :: IO (Either IOException ())) `shouldReturn` Right ()
     it "showTreeUpTo spaceshipExample throws no IO exception" $
       (try (silence . showTreeUpTo 5 . tree lns $ (spaceshipExample,[])) :: IO (Either IOException ())) `shouldReturn` Right ()
+
+  describe "CAAS" $ do
+    prop "works for initial graphs" $
+      \(ArbIGG g) -> worksFor g
+    prop "works for reachable graphs" $
+      \(ArbPA ((ginit,sequ),_)) -> worksFor $ calls ginit sequ
+    -- prop "works for reachable graphs" $
+    --   \(ArbGG g) -> worksFor g -- TODO needs ArbGG (non-initial, non-reachable!)
 
   describe "general randomized checks" $ do
     prop "localAnyCall == allowedCalls anyCall" $
