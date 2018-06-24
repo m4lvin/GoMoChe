@@ -37,6 +37,12 @@ subGraphWith (nRel,sRel) ys = (fix nRel, fix sRel) where
   subset = IntSet.fromList ys
   fix r = IntMap.map (IntSet.intersection subset) $ IntMap.restrictKeys r subset
 
+isSubGraphOf :: Graph -> Graph -> Bool
+isSubGraphOf (nRelA,sRelA) (nRelB,sRelB) = (nRelA `isSubRelOf` nRelB) && (sRelA `isSubRelOf` sRelB)
+
+isSubRelOf :: Relation -> Relation -> Bool
+isSubRelOf relA relB = IntMap.foldrWithKey' (\x ys b ->  b && ys `IntSet.isSubsetOf` (relB IntMap.! x)) True relA
+
 graphWithoutUnsafe :: Graph -> Agent -> Graph
 graphWithoutUnsafe (nRel,sRel) x = (IntMap.delete x nRel, IntMap.delete x sRel)
 
