@@ -102,6 +102,7 @@ main = hspec $ do
     describe "diamondExample" $ do
       it "LNS      (48,44)" $ statistics lns                                  (diamondExample,[]) `shouldBe` (48,44)
       it "LNS◾     ( 8, 8)" $ statistics (strengHard lns)                     (diamondExample,[]) `shouldBe` ( 8, 8)
+      it "LNS◾◽    ( 8, 4)" $ statistics (strengStepHard $ strengHard lns)    (diamondExample,[]) `shouldBe` ( 8, 4)
       it "LNS◾◾    ( 0, 4)" $ statistics (finiteIterate 2 strengHard lns)     (diamondExample,[]) `shouldBe` ( 0, 4)
       it "LNS◾◾◾   ( 0, 0)" $ statistics (finiteIterate 3 strengHard lns)     (diamondExample,[]) `shouldBe` ( 0, 0)
       it "LNS◆     (48, 8)" $ statistics (strengSoft lns)                     (diamondExample,[]) `shouldBe` (48, 8)
@@ -126,10 +127,13 @@ main = hspec $ do
       it "hard lns is empty on lemmaExample after (0,2)" $
         tree (strengHard lns) (lemmaExample,[(0,2)]) `shouldBe` Node (lemmaExample,[(0,2)]) []
 
-  describe "refuted conjectures" $
+  describe "refuted conjectures" $ do
     it "LNS◾ ⊆ LNS◽◽  refuted by  03-012-2-23 I4" $
       let g = parseGraph "03-012-2-23 I4" in
-        sequences (strengHard lns) (g,[]) `shouldSatisfy` not . all (`prefixElem` sequences (strengStepHard $ strengStepHard lns) (g,[]))
+        sequences (strengHard lns) (g,[]) `shouldNotSatisfy` all (`prefixElem` sequences (strengStepHard $ strengStepHard lns) (g,[]))
+    it "LNS◾ ⊆ LNS◾◽  refuted by  diamondExample" $
+      let g = diamondExample in
+        sequences (strengHard lns) (g,[]) `shouldNotSatisfy` all (`prefixElem` sequences (strengStepHard $ strengHard lns) (g,[]))
 
   describe "conjectures" $ do
     prop "??? LNS◾ ⊆ LNS◽" $

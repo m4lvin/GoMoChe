@@ -123,7 +123,7 @@ epistAlt _ _     (g, []     ) = [ (g, []) ] -- initial graph is common knowledge
 epistAlt a proto (g, history) =
   let
     (prev, lastevent) = (init history, last history)
-    (lastcall@(x,y)) = lastevent -- this pattern match might fail, but laziness saves us
+    lastcall@(x,y)    = lastevent -- this pattern match might fail, but laziness saves us
   in sort $
     if a `isin` lastevent
        -- if a was in the last call, consider all allowed histories
