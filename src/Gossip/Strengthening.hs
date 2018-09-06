@@ -54,7 +54,6 @@ diamondProto (a,b) = K a lns $ Conj [ lns (a,b), Disj [clause1,clause2a,clause2b
     ]))
   clause1 = Conj [knowsOnlyOwn a, Disj [noCallsMade, oneCallMade]]
   clause2a = ExistsAg (\k -> ExistsAg (\l ->
-    if a /= k && k /= l && a /= l then Conj [S a k, S a l, Neg $ S a b] else Bot))
-  clause2b = HatK a lns $ expert b
-  clause3 = ForallAg knowsAtLeastTwo
-  knowsAtLeastTwo k =  ExistsAg (\l -> ExistsAg (\m -> if l /= m then Conj [S k l, S k m] else Bot))
+    if k /= l && all (`notElem` [a,b]) [k,l] then Conj [S a k, S a l] else Bot))
+  clause2b = ForallAg (\k -> ExistsAg (\l -> if k /= l then S k l else Bot))
+  clause3 = expert b

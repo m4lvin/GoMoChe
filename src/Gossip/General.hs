@@ -132,6 +132,7 @@ epistAlt a proto (g, history) =
        -- (This means we do merge-then-inspect.)
        then [ (g',althist ++ [lastcall])
               | (g',althist) <- epistAlt a proto (g,prev)
+              , eval (g',prev) (proto lastcall)
               , eval (g',althist) (proto lastcall)
               , localSameFor x (calls g' althist) (calls g prev)
               , localSameFor y (calls g' althist) (calls g prev) ]
