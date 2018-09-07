@@ -48,12 +48,9 @@ allStatistics k =
 
 diamondProto :: Protocol
 diamondProto (a,b) = K a lns $ Conj [ lns (a,b), Disj [clause1,clause2a,clause2b,clause3] ] where
-  noCallsMade = ForallAg (\i -> ForallAg (\j -> if i == j then Top else Neg $ S i j))
-  oneCallMade = ExistsAg (\i -> ExistsAg (\j -> Conj [
-    S i j, S j i, ForallAg (\k -> if k `elem` [i,j] then Top else knowsOnlyOwn k)
-    ]))
+  noCallsMade = ForallAg (\i -> forallAgWith (/= i) (Neg . S i))
+  oneCallMade = ExistsAg (\i -> ExistsAg (\j -> Conj [ S i j, S j i, forallAgWith (`notElem` [i,j]) knowsOnlyOwn ]))
   clause1 = Conj [knowsOnlyOwn a, Disj [noCallsMade, oneCallMade]]
-  clause2a = ExistsAg (\k -> ExistsAg (\l ->
-    if k /= l && all (`notElem` [a,b]) [k,l] then Conj [S a k, S a l] else Bot))
-  clause2b = ForallAg (\k -> ExistsAg (\l -> if k /= l then S k l else Bot))
+  clause2a = ExistsAg (\k -> existsAgWith (\l -> k /= l && all (`notElem` [a,b]) [k,l]) (\l -> Conj [S a k, S a l]) )
+  clause2b = ForallAg (\k -> existsAgWith (/= k) (S k))
   clause3 = expert b

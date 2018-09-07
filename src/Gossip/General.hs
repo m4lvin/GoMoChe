@@ -71,6 +71,13 @@ allExperts = ForallAg expert
 knowsOnlyOwn :: Agent -> Form
 knowsOnlyOwn x = ForallAg (\y -> if x == y then Top else Neg $ S x y)
 
+-- retricted quantifiers
+forallAgWith :: (Agent -> Bool) -> (Agent -> Form) -> Form
+forallAgWith cond form = ForallAg (\x -> if cond x then form x else Top)
+
+existsAgWith :: (Agent -> Bool) -> (Agent -> Form) -> Form
+existsAgWith cond form = ExistsAg (\x -> if cond x then form x else Bot)
+
 -- General Protocols --
 type Protocol = (Agent,Agent) -> Form
 
