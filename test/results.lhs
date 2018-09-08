@@ -119,10 +119,11 @@ main = hspec $ do
       it "LNS◇◇ == LNS◇◇◇"  $ let f k = sequences (finiteIterate k strengStepSoft lns) (diamondExample,[]) in f 2 `shouldBe` f 3
       it "LNS◇◽◽◽  (16, 0)" $ statistics (finiteIterate 3 strengStepHard $ strengStepSoft lns) (diamondExample,[]) `shouldBe` (16,0)
       it "LNS◇◽◾   (16, 0)" $ statistics (strengHard $ strengStepHard $ strengStepSoft lns)    (diamondExample,[]) `shouldBe` (16,0)
-      it "diamondProto (32,0)" $ statistics diamondProto (diamondExample,[]) `shouldBe` (32,0)
+      it "diamondProtoOld (32,0)" $ statistics diamondProtoOld (diamondExample,[]) `shouldBe` (32,0)
+      it "diamondProto (8,0)" $ statistics diamondProto (diamondExample,[]) `shouldBe` (8,0)
       it "LNS◾◾ ≠ LNS◾" $ sequences (strengHard $ strengHard lns) (diamondExample,[]) `shouldNotBe` sequences (strengHard lns) (diamondExample,[])
       it "diamondSolvers are successful" $ all (isSuccSequence (diamondExample,[])) diamondSolvers `shouldBe` True
-      it "diamondSolvers ⊆ diamondProto" $ all (`elem` (sequences diamondProto (diamondExample,[]))) diamondSolvers `shouldBe` True
+      it "diamondSolvers = diamondProto" $ diamondSolvers `shouldBe` sequences diamondProto (diamondExample,[])
 
     describe "lemmaExample" $
       it "hard lns is empty on lemmaExample after (0,2)" $

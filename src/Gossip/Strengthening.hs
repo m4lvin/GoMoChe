@@ -46,11 +46,32 @@ allStatistics k =
     , ("hard"           , strengHard     )
     ]
 
-diamondProto :: Protocol
-diamondProto (a,b) = K a lns $ Conj [ lns (a,b), Disj [clause1,clause2a,clause2b,clause3] ] where
+diamondProtoOld :: Protocol
+diamondProtoOld (a,b) = K a lns $ Conj [ lns (a,b), Disj [clause1,clause2a,clause2b,clause3] ] where
   noCallsMade = ForallAg (\i -> forallAgWith (/= i) (Neg . S i))
   oneCallMade = ExistsAg (\i -> ExistsAg (\j -> Conj [ S i j, S j i, forallAgWith (`notElem` [i,j]) knowsOnlyOwn ]))
   clause1 = Conj [knowsOnlyOwn a, Disj [noCallsMade, oneCallMade]]
   clause2a = ExistsAg (\k -> existsAgWith (\l -> k /= l && all (`notElem` [a,b]) [k,l]) (\l -> Conj [S a k, S a l]) )
   clause2b = ForallAg (\k -> existsAgWith (/= k) (S k))
-  clause3 = expert b
+  clause3  = expert b
+
+diamondProto :: Protocol
+diamondProto (i,j) = Disj [noCallsMade,clause2,clause3,clause4,clause5] where
+  noCallsMade = ForallAg (\k -> forallAgWith (/= k) (Neg . S k))
+  oneCallMade = ExistsAg (\k -> ExistsAg (\l ->
+                  Conj [ S k l, S l k, forallAgWith (`notElem` [k,l]) knowsOnlyOwn ]))
+  clause2 = Conj [oneCallMade, knowsOnlyOwn i]
+  clause3 = Conj
+    [ Neg $ S i j
+    , Disj [ Conj [ existsAgWith (/= i) (\k ->
+                      existsAgWith (`notElem` [i,k]) (\l -> Conj [ S i k, S i l ] ) )
+                  , forallAgWith (/= i) (\k ->
+                      S k i `Impl` forallAgWith (`notElem` [i,k]) (\l -> Neg $ S l i)) ]
+           , Conj [ K i lns $ ForallAg (\k -> existsAgWith (/= k) (\l ->
+                      Conj [ S k l, forallAgWith (`notElem` [k,l]) (Neg . S k) ] ) )
+                  , ForallAg (\k -> N k i `Impl` S k i) ] ] ]
+  clause4 = Conj [ Neg $ S i j, HatK i lns (ExistsAg expert)
+                 , Neg $ existsAgWith (/= i) (\k -> existsAgWith (`notElem` [i,k]) (\l -> Conj [ S i k , S i l]))
+                 , ForallAg (\k -> N k i `Impl` S k i)]
+  clause5 = Conj [ Neg $ S i j
+                 , HatK i lns (forallAgWith (/= i) expert) ]
