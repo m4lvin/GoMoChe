@@ -56,9 +56,9 @@ diamondProtoOld (a,b) = K a lns $ Conj [ lns (a,b), Disj [clause1,clause2a,claus
   clause3  = expert b
 
 diamondProto :: Protocol
-diamondProto (i,j) = Disj [noCallsMade,clause2,clause3,clause4,clause5] where
+diamondProto (i,j) = K i anyCall $ Disj [noCallsMade,clause2,clause3,clause4,clause5] where
   noCallsMade = ForallAg (\k -> forallAgWith (/= k) (Neg . S k))
-  oneCallMade = ExistsAg (\k -> ExistsAg (\l ->
+  oneCallMade = ExistsAg (\k -> existsAgWith (/= k) (\l ->
                   Conj [ S k l, S l k, forallAgWith (`notElem` [k,l]) knowsOnlyOwn ]))
   clause2 = Conj [oneCallMade, knowsOnlyOwn i]
   clause3 = Conj
