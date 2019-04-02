@@ -2,20 +2,23 @@
 
 Related references:
 
+- Hans van Ditmarsch, Malvin Gattinger, Louwe B. Kuijer, Pere Pardo:
+  [Strengthening Gossip Protocols using Protocol-Dependent Knowledge](https://malv.in/2019/StrengtheningGossipProtocols.pdf)
+  In: Journal of Applied Logics - IfCoLog Journal of Logics and their Applications, Volume 6, Number 1, 2019.
+
+- Chapter 6 "Dynamic Gossip"
+  in Malvin Gattinger: [New Directions in Model Checking Dynamic Epistemic Logic](https://malv.in/phdthesis)
+  PhD thesis at ILLC, University of Amsterdam, 2018.
+
 - Hans van Ditmarsch, Jan van Eijck, Pere Pardo, Rahim Ramezanian, François Schwarzentruber:
   *Dynamic Gossip*.
-  To appear in the Bulletin of the Iranian Mathematical Society (BIMS). 2015, last revised 2018-02-12.
-  [arXiv:1511.00867](https://arxiv.org/abs/1511.00867)
+  In: Bulletin of the Iranian Mathematical Society (BIMS), 2018.
+  https://doi.org/10.1007/s41980-018-0160-4
 
 - Hans van Ditmarsch, Jan van Eijck, Pere Pardo, Rahim Ramezanian, François Schwarzentruber:
   *Epistemic protocols for dynamic gossip*.
   In: Journal of Applied Logic, Volume 20, 2017, Pages 1-31,
   https://doi.org/10.1016/j.jal.2016.12.001
-
-- Chapter 6 "Dynamic Gossip"
-  in Malvin Gattinger: *New Directions in Model Checking Dynamic Epistemic Logic*,
-  PhD thesis at ILLC, University of Amsterdam, 2018.
-  https://malv.in/phdthesis
 
 ## Installation
 
