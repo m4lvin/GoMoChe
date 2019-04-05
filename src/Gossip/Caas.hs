@@ -35,7 +35,7 @@ plusAgentWith (nRel,sRel) x nums =
 subGraphWith :: Graph -> [Agent] -> Graph
 subGraphWith (nRel,sRel) ys = (fix nRel, fix sRel) where
   subset = IntSet.fromList ys
-  fix r = IntMap.map (IntSet.intersection subset) $ IntMap.restrictKeys r subset
+  fix r = IntMap.map (IntSet.intersection subset) $ IntMap.filterWithKey (\k _ -> k `IntSet.member` subset) r
 
 isSubGraphOf :: Graph -> Graph -> Bool
 isSubGraphOf (nRelA,sRelA) (nRelB,sRelB) = (nRelA `isSubRelOf` nRelB) && (sRelA `isSubRelOf` sRelB)
