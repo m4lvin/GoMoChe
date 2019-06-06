@@ -47,3 +47,18 @@ lemmaExample = exampleFromList [[0,2,3],[1,2],[2],[3],[3,4],[2,3,5]]
 -- | Triangle, six agents
 triangleExample :: Graph
 triangleExample = exampleFromList [[0],[1,4,5],[2,4,0],[3,5,0],[4],[5]]
+
+sixteenLns :: Sequence
+sixteenLns =
+  [ (1,2), (3,4), (5,6), (7,8), (a,b), (c,d), (e,f), (g,h)
+  , (2,3), (4,5), (6,7), (8,1), (b,c), (d,e), (f,g), (h,a)
+  , (1,a), (4,c), (7,h), (6,f)
+  ] where [a,b,c,d,e,f,g,h] = 0:[9..15]
+
+-- NOTE: only the last cal (6,f) here is not spider permitted!
+sixteenAlmostSpi :: Sequence
+sixteenAlmostSpi =
+  [ (1,2), (3,4), (5,6), (7,8), (a,b), (c,d), (e,f), (g,h)
+  , (3,2), (5,4), (7,6), (1,8), (c,b), (e,d), (g,f), (a,h)
+  , (1,a), (c,4), (7,h), (6,f)
+  ] where [a,b,c,d,e,f,g,h] = 0:[9..15]
