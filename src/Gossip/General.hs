@@ -223,3 +223,7 @@ compareSequences :: State -> [Protocol] -> [(Sequence,[Bool])]
 compareSequences s protos =
   [ (sequ, [ sequ `elem` sequences p s | p <- protos ]) | sequ <- allsequs ] where
     allsequs = sort $ nub $ concat [sequences p s | p <- protos]
+
+isSequenceOf :: Protocol -> State -> Sequence -> Bool
+isSequenceOf _     _       []       = True
+isSequenceOf proto current (c:rest) = eval current (proto c) && isSequenceOf proto (pointCall current c) rest
