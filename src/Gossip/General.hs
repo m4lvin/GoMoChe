@@ -59,6 +59,10 @@ data Prog = Test Form
 
 -- useful abbreviations --
 
+-- biimplication
+equi :: Form -> Form -> Form
+equi f g = Conj [f `Impl` g, g `Impl` f]
+
 -- agent a is an expert
 expert :: Agent -> Form
 expert a = ForallAg (S a)
@@ -70,6 +74,19 @@ allExperts = ForallAg expert
 -- agent knows no other secrets than their own
 knowsOnlyOwn :: Agent -> Form
 knowsOnlyOwn x = ForallAg (\y -> if x == y then Top else Neg $ S x y)
+
+type Info = ([Agent],[Agent])
+
+allInfos :: [Agent] -> [Info]
+allInfos [] = [([],[])]
+allInfos (x:xs) = concat [ [(x:ns,x:ss), (x:ns,ss), (ns,ss) ]
+                         | (ns,ss) <- allInfos xs ]
+
+knowsExactly :: Agent -> Info -> Form
+knowsExactly a (nums,secs) =
+  ForallAg (\y -> Conj [ if y `elem` nums then N a y else Neg $ N a y
+                       , if y `elem` secs then S a y else Neg $ S a y
+                       ] )
 
 -- retricted quantifiers
 forallAgWith :: (Agent -> Bool) -> (Agent -> Form) -> Form
