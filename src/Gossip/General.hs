@@ -4,6 +4,7 @@ module Gossip.General where
 
 import Gossip
 import Gossip.Internal
+
 import Data.List
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -70,6 +71,12 @@ expert a = ForallAg (S a)
 -- all agents are experts
 allExperts :: Form
 allExperts = ForallAg expert
+
+superExpert :: Agent -> Protocol -> Form
+superExpert a proto = K a proto allExperts
+
+allSuperExperts :: Protocol -> Form
+allSuperExperts proto = ForallAg (flip superExpert proto)
 
 -- agent knows no other secrets than their own
 knowsOnlyOwn :: Agent -> Form
@@ -238,6 +245,9 @@ sequences proto (g,sigma)
 
 isSuccSequence :: State -> Sequence -> Bool
 isSuccSequence (g,sigma) cs =  isSolved (calls g (sigma ++ cs))
+
+isSuperSuccSequence :: Protocol -> State -> Sequence -> Bool
+isSuperSuccSequence proto (g,sigma) cs = (g, (sigma ++ cs)) |= ForallAg (\a -> superExpert a proto)
 
 compareSequences :: State -> [Protocol] -> [(Sequence,[Bool])]
 compareSequences s protos =
