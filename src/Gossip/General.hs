@@ -34,6 +34,7 @@ instance Ord ProgWithAgentVar where
 -- | Formulas
 data Form = N Agent Agent
           | S Agent Agent
+          | C Agent Agent
           | Top
           | Bot
           | Neg Form
@@ -117,6 +118,9 @@ instance Show Protocol where
 lns :: Protocol
 lns (x, y) = Neg $ S x y
 
+cmo :: Protocol
+cmo (x, y) = Conj [ Neg (C x y), Neg (C y x) ]
+
 anyCall,noCall :: Protocol
 anyCall = const Top
 noCall = const Bot
@@ -180,6 +184,7 @@ epistAlt a proto (g, history) =
 eval :: State -> Form -> Bool
 eval state (N a b  )    = b `IntSet.member` (fst (uncurry calls state) `at` a)
 eval state (S a b  )    = b `IntSet.member` (snd (uncurry calls state) `at` a)
+eval state (C a b  )    = (a,b) `elem` (snd state)
 eval _     Top          = True
 eval _     Bot          = False
 eval state (Neg f  )    = not $ eval state f
