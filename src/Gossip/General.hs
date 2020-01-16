@@ -152,8 +152,8 @@ epistAlt a proto (g, history) =
     if a `isin` lastevent
        -- if a was in the last call, consider all allowed histories
        -- before, then restrict to localSameFor x and y, because a is
-       -- one of them and observes their local states.
-       -- (This means we do merge-then-inspect.)
+       -- one of them and observes both their local states.
+       -- (This means we do inspect-then-merge!)
        then [ (g',althist ++ [lastcall])
               | (g',althist) <- epistAlt a proto (g,prev)
               , eval (g',prev) (proto lastcall)
@@ -186,10 +186,13 @@ eval state (Dia p f)    = any (`eval` f) (Set.toList $ runs state p)
 eval state (ExistsAg f) = any (eval state . f) (agentsOf $ fst state)
 eval state (ForallAg f) = all (eval state . f) (agentsOf $ fst state)
 
+(|=) :: State -> Form -> Bool
+(|=) = eval
+
 -- evaluate programs
 runs :: State -> Prog -> Set State
 runs state     (Test f)     | eval state f = Set.singleton state
-                            | otherwise         = Set.empty
+                            | otherwise    = Set.empty
 -- we always evaluate calls, ignoring protocol and whether it is ck:
 runs (g,sigma) (Call a b)   | eval (g,sigma) (N a b) = Set.singleton (g,sigma++[(a,b)])
                             | otherwise              = Set.empty
