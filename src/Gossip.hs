@@ -36,6 +36,15 @@ parseCall foo   = error $ "This is not a call: " ++ show foo
 ppSequence :: Sequence -> String
 ppSequence = intercalate ";" . map ppCall
 
+charAgent :: Int -> Char
+charAgent = (!!) ['a'..]
+
+charCall :: Call -> String
+charCall = (\(x,y) -> charAgent x : charAgent y : [])
+
+charSequence :: [(Int, Int)] -> [Char]
+charSequence = intercalate ";" . map charCall where
+
 parseSequence :: String -> Sequence
 parseSequence = map parseCall . splitWhere ';'
 
