@@ -27,3 +27,10 @@ setUnion = Set.unions . Set.toList
 
 prefixElem :: Eq a => [a] -> [[a]] -> Bool
 prefixElem xs = any (\ys -> xs `isPrefixOf` ys)
+
+-- string replace, see https://stackoverflow.com/a/14908602
+rep :: Eq a => [a] -> [a] -> [a] -> [a]
+rep _ _ []         = []
+rep a b s@(x:xs)
+  | isPrefixOf a s = b ++ rep a b (drop (length a) s)
+  | otherwise      = x  : rep a b xs

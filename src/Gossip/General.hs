@@ -2,39 +2,22 @@
 
 module Gossip.General where
 
-import Gossip
-import Gossip.Internal
-
 import Data.List
 import Data.Set (Set)
 import qualified Data.Set as Set
 import qualified Data.IntSet as IntSet
 import qualified Data.IntMap as IntMap
 
+import Gossip
+import Gossip.Internal
+
 -- This is the full language, protocols should only use a subset.
-
--- NOTE this will eq/show/compare formulas with variables in a misleading way!
-
-type FormWithAgentVar = Agent -> Form
-instance Eq FormWithAgentVar where
-  (==) f g = f 0 == g 0
-instance Show FormWithAgentVar where
-  show f = show (f (-1))
-instance Ord FormWithAgentVar where
-  compare f g = compare (f 0) (g 0)
-
-type ProgWithAgentVar = Agent -> Prog
-instance Eq ProgWithAgentVar where
-  (==) p q = p 0 == q 0
-instance Show ProgWithAgentVar where
-  show p = show (p (-1))
-instance Ord ProgWithAgentVar where
-  compare p q = compare (p 0) (q 0)
 
 -- | Formulas
 data Form = N Agent Agent
           | S Agent Agent
           | C Agent Agent
+          | Same Agent Agent
           | Top
           | Bot
           | Neg Form
@@ -58,6 +41,57 @@ data Prog = Test Form
           | Star Prog
           deriving (Eq,Ord,Show)
 
+-- NOTE Showing and comparing nested formulas with "\x ->" agent variables is tricky.
+-- Our solution for now is to string-replace agents by variables, depending on nesting level.
+
+variables :: [Char]
+variables = "zyxwvutsZYXWVUTS"
+
+type FormWithAgentVar = Agent -> Form
+instance Eq FormWithAgentVar where
+  (==) f g = (f 0 == g 0 && f 1 == g 1 && f 999 == g 999)
+instance Show FormWithAgentVar where
+  show f = ("(\\" ++ [c] ++ " -> " ++ rep (show n) [c] (show (f n))) ++ ")" where
+    c = variables !! n
+    n = varLevel (f 1)
+instance Ord FormWithAgentVar where
+  compare f g = compare (f 0) (g 0)
+
+type ProgWithAgentVar = Agent -> Prog
+instance Eq ProgWithAgentVar where
+  (==) p q = p 0 == q 0
+instance Show ProgWithAgentVar where
+  show p = ("(\\" ++ [c] ++ " -> " ++ rep (show n) [c] (show (p n))) ++ ")" where
+    c = variables !! n
+    n = varLevelP (p 1)
+instance Ord ProgWithAgentVar where
+  compare p q = compare (p 0) (q 0)
+
+varLevel :: Form -> Int
+varLevel Top          = 0
+varLevel Bot          = 0
+varLevel (N _ _)      = 0
+varLevel (S _ _)      = 0
+varLevel (C _ _)      = 0
+varLevel (Same _ _)   = 0
+varLevel (Neg f)      = varLevel f
+varLevel (Conj fs)    = maximum (map varLevel fs)
+varLevel (Disj fs)    = maximum (map varLevel fs)
+varLevel (Impl f g)   = maximum (map varLevel [f,g])
+varLevel (K _ p f)    = max (2 + varLevelP (protoTerm p)) (varLevel f)
+varLevel (HatK _ p f) = max (2 + varLevelP (protoTerm p)) (varLevel f)
+varLevel (Box _ f)    = varLevel f
+varLevel (Dia _ f)    = varLevel f
+varLevel (ExistsAg varf) = 1 + varLevel (varf 999)
+varLevel (ForallAg varf) = 1 + varLevel (varf 999)
+
+varLevelP :: Prog -> Int
+varLevelP (Test f) = varLevel f
+varLevelP (Call _ _) = 0
+varLevelP (Seq ps) = maximum (map varLevelP ps)
+varLevelP (Cup ps) = maximum (map varLevelP ps)
+varLevelP (CupAg varp) = 1 + (varLevelP (varp 999))
+varLevelP (Star p) = varLevelP p
 
 -- useful abbreviations --
 
@@ -111,17 +145,24 @@ forallAgWith cond form = ForallAg (\x -> if cond x then form x else Top)
 existsAgWith :: (Agent -> Bool) -> (Agent -> Form) -> Form
 existsAgWith cond form = ExistsAg (\x -> if cond x then form x else Bot)
 
+-- PDL style programming
+ifthenelse :: Form -> Prog -> Prog -> Prog
+ifthenelse f p q = Cup [Seq [Test f, p], Seq [Test (Neg f), q]]
+
 -- General Protocols --
 type Protocol = (Agent,Agent) -> Form
 
 instance Eq Protocol where
-  p1 == p2 = p1 (0,1) == p2 (0,1)
+  p1 == p2 = p1 (0,1) == p2 (0,1)  &&  p1 (1,0) == p2 (1,0)
 
 instance Ord Protocol where
   compare p1 p2 = compare (p1 (0,1)) (p2 (0,1))
 
 instance Show Protocol where
-  show p = show $ p (0,1)
+  show p = "(\\("++[c]++","++[d]++") -> " ++ (rep (show n) [c] $ rep (show (n + 1)) [d] $ show (p (n,n+1))) ++ ")" where
+    n = varLevel (p (1,2))
+    c = variables !! n
+    d = variables !! (n + 1)
 
 lns :: Protocol
 lns (x, y) = Neg $ S x y
@@ -193,6 +234,7 @@ eval :: State -> Form -> Bool
 eval state (N a b  )    = b `IntSet.member` (fst (uncurry calls state) `at` a)
 eval state (S a b  )    = b `IntSet.member` (snd (uncurry calls state) `at` a)
 eval state (C a b  )    = (a,b) `elem` (snd state)
+eval _     (Same a b)   = a == b
 eval _     Top          = True
 eval _     Bot          = False
 eval state (Neg f  )    = not $ eval state f
@@ -227,8 +269,8 @@ runs state     (Star p)     = lfp loop $ Set.singleton state where
 -- Abbreviations to run protocols and describe success in formulas --
 
 protoCanGoOn, protoFinished :: Protocol -> Form
-protoCanGoOn  proto = ExistsAg (\x -> ExistsAg (\y -> if x /= y then Conj [       N x y,       proto (x,y) ] else Bot))
-protoFinished proto = ForallAg (\x -> ForallAg (\y -> if x /= y then Disj [ Neg $ N x y, Neg $ proto (x,y) ] else Top))
+protoCanGoOn  proto = ExistsAg (\x -> ExistsAg (\y -> (Neg $ Same x y) `con` Conj [       N x y,       proto (x,y) ]))
+protoFinished proto = ForallAg (\x -> ForallAg (\y -> Same x y `dis` Disj [ Neg $ N x y, Neg $ proto (x,y) ]))
 
 protoTerm :: Protocol -> Prog
 protoTerm proto = Seq [Star (protoStep proto), Test (protoFinished proto)]
@@ -236,9 +278,9 @@ protoTerm proto = Seq [Star (protoStep proto), Test (protoFinished proto)]
 protoStep :: Protocol -> Prog
 protoStep proto =
   CupAg (\x -> CupAg (\y ->
-    if x /= y
-      then Seq [ Test (Conj [N x y, proto (x,y)]), Call x y ]
-      else Test Bot
+    ifthenelse (Neg (Same x y))
+               (Seq [ Test (Conj [N x y, proto (x,y)]), Call x y])
+               (Test Bot)
   ))
 
 isWeaklySuccForm :: Protocol -> Form
