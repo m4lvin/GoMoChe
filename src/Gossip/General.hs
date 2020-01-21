@@ -298,6 +298,13 @@ sequences proto (g,sigma)
   | otherwise = [ c : rest | c <- allowedCalls proto (g,sigma)
                            , rest <- sequences proto (g,sigma++[c]) ]
 
+sequencesUpTo :: Protocol -> State -> Int -> [Sequence]
+sequencesUpTo _     (_,_    ) 0 = [ [] ]
+sequencesUpTo proto (g,sigma) n
+  | null (allowedCalls proto (g,sigma)) = [ [] ]
+  | otherwise = [ c : rest | c <- allowedCalls proto (g,sigma)
+                           , rest <- sequencesUpTo proto (g,sigma++[c]) (n-1) ]
+
 isSuccSequence :: State -> Sequence -> Bool
 isSuccSequence (g,sigma) cs =  isSolved (calls g (sigma ++ cs))
 
@@ -312,3 +319,30 @@ compareSequences s protos =
 isSequenceOf :: Protocol -> State -> Sequence -> Bool
 isSequenceOf _     _       []       = True
 isSequenceOf proto current (c:rest) = eval current (proto c) && isSequenceOf proto (pointCall current c) rest
+
+knowledgeOfIn :: Agent -> State -> [Char]
+knowledgeOfIn a s = [ head . show . fromEnum $s |= S a b | b <- agentsOf (fst s) ] where
+
+metaKnowledgeOfIn :: Agent -> Protocol -> State -> [Char]
+metaKnowledgeOfIn a proto s = [ charFor b | b <- agentsOf (fst s) ] where
+  charFor b = if s |= K a proto Bot then '_' else head . show . fromEnum $ s |= K a proto (expert b)
+
+knowledgeLine :: State -> Protocol -> String
+knowledgeLine s proto = concat
+  [ "  " ++ (knowledgeOfIn a s ++ "-" ++ metaKnowledgeOfIn a proto s)
+  | a <- agentsOf (fst s) ]
+
+knowledgeOverview :: State -> Protocol -> IO ()
+knowledgeOverview (g,sigma) proto = do
+  -- title line
+  putStr "  "
+  mapM_ (\_ -> do
+            putStr $ "  " ++ map charAgent (agentsOf g) ++ map charAgent (agentsOf g)
+        ) (agentsOf g)
+  putStr "\n  "
+  putStrLn $ knowledgeLine (g,[]) proto
+  mapM_ (\n -> do
+            let s = (g, take n sigma)
+            putStr (charCall (last $ snd s))
+            putStrLn $ knowledgeLine s proto
+        ) [1 .. length sigma]
