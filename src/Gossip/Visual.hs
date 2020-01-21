@@ -3,7 +3,7 @@
 module Gossip.Visual where
 
 import Data.Function
-import Data.GraphViz hiding (N, Star)
+import Data.GraphViz hiding (C, N, Star)
 import qualified Data.GraphViz.Types.Generalised as GenGV
 import Data.GraphViz.Types.Monadic
 import Data.GraphViz.Attributes.Complete (Attribute(Dir,Rank,Style),StyleItem (SItem),StyleName(Dashed))

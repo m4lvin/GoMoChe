@@ -61,6 +61,14 @@ data Prog = Test Form
 
 -- useful abbreviations --
 
+-- binary conjunction
+con :: Form -> Form -> Form
+con f g = Conj [f,g]
+
+-- binary disjunctions
+dis :: Form -> Form -> Form
+dis f g = Disj [f,g]
+
 -- biimplication
 equi :: Form -> Form -> Form
 equi f g = Conj [f `Impl` g, g `Impl` f]
