@@ -3,6 +3,13 @@
 \begin{code}
 module Main where
 
+import Control.Exception (evaluate,try,IOException)
+import Data.List (nub)
+import System.IO.Silently
+import Test.Hspec
+import Test.Hspec.QuickCheck
+import Test.QuickCheck
+
 import Gossip
 import Gossip.Caas
 import Gossip.Examples
@@ -13,12 +20,6 @@ import Gossip.Internal
 import Gossip.Strengthening
 import Gossip.Tree
 
-import Control.Exception (evaluate,try,IOException)
-import Test.Hspec
-import Test.Hspec.QuickCheck
-import Test.QuickCheck
-import System.IO.Silently
-
 main :: IO ()
 main = hspec $ do
   describe "internal functions" $ do
@@ -27,7 +28,7 @@ main = hspec $ do
     mapM_ (\n -> it ("lineInit and totalInit are in allInits  for n = " ++ show n) $
         lineInit n `elem` allInits n && totalInit n `elem` allInits n) [2..5]
     prop "parseGraph . ppGraph == id" $
-      \(ArbIGG g) -> (parseGraph (ppGraph g) === g)
+      \(ArbIGG g) -> parseGraph (ppGraph g) === g
     prop "ppGraph preserves == on initial graphs" $
       \(ArbIGG g) (ArbIGG h) -> (ppGraph g == ppGraph h) === (g == h)
     prop "ppGraph preserves == on points after some calls" $
@@ -163,6 +164,16 @@ main = hspec $ do
       \(ArbIGG g) -> softUBD lns (tree lns (g,[])) === tree (strengStepSoft lns) (g,[])
     prop "softUBD . softUBD === strengStepSoft . strengStepSoft" $
       \(ArbIGG g) -> softUBD lns (softUBD lns (tree lns (g,[]))) === tree (strengStepSoft $ strengStepSoft lns) (g,[])
+
+  describe "e2 examples" $ do
+    it "CMO super after ab;cd is super succ" $
+      (totalInit 4, [(0,1),(2,3)]) |= isStronglySuperSuccForm cmo cmoSuper
+    it "CMO super after ab;cd always has 3 calls left" $
+      nub (map length $ sequences cmoSuper (totalInit 4, [(0,1),(2,3)])) `shouldBe` [3]
+    it "CMO super after ab;bc is not strongly super succ" $
+      (totalInit 4, [(0,1),(1,2)]) |= Neg (isStronglySuperSuccForm cmo cmoSuper)
+    it "CMO super after ab;bc can continue with 4 or 3 calls" $
+      nub (map length $ sequences cmoSuper (totalInit 4, [(0,1),(1,2)])) `shouldBe` [4,3]
 
 
 -- | check that epistAlt describes a reflexive, transitive, symmetric relations
