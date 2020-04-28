@@ -2,6 +2,7 @@
 
 module Gossip.General where
 
+import Data.Char (toUpper)
 import Data.List
 import Data.Set (Set)
 import qualified Data.Set as Set
@@ -170,9 +171,21 @@ lns (x, y) = Neg $ S x y
 cmo :: Protocol
 cmo (x, y) = Conj [ Neg (C x y), Neg (C y x) ]
 
+cmoSuper :: Protocol
+cmoSuper (x, y) = Conj [ Neg (superExpert x cmo) , Neg (C x y), Neg (C y x) ]
+
+cmoWLOG :: Protocol
+cmoWLOG (x, y) = if x < y then Conj [ Neg (C x y), Neg (C y x) ] else Bot
+
 anyCall,noCall :: Protocol
 anyCall = const Top
 noCall = const Bot
+
+anySuper :: Protocol
+anySuper (x, _) = Neg (superExpert x anyCall)
+
+anySuperWLOG :: Protocol
+anySuperWLOG (x, y) = if x < y then Neg (superExpert x anyCall) else Bot
 
 type State = (Graph,Sequence)
 
@@ -292,6 +305,9 @@ isStronglySuccForm proto = Box (protoTerm proto) allExperts
 isStronglyUnsuccForm :: Protocol -> Form
 isStronglyUnsuccForm proto = Box (protoTerm proto) (Neg allExperts)
 
+isStronglySuperSuccForm :: Protocol -> Protocol -> Form
+isStronglySuperSuccForm knownProto proto = Box (protoTerm proto) (allSuperExperts knownProto)
+
 sequences :: Protocol -> State -> [Sequence]
 sequences proto (g,sigma)
   | null (allowedCalls proto (g,sigma)) = [ [] ]
@@ -321,25 +337,23 @@ isSequenceOf _     _       []       = True
 isSequenceOf proto current (c:rest) = eval current (proto c) && isSequenceOf proto (pointCall current c) rest
 
 knowledgeOfIn :: Agent -> State -> [Char]
-knowledgeOfIn a s = [ head . show . fromEnum $s |= S a b | b <- agentsOf (fst s) ] where
+knowledgeOfIn a s = [ if s |= S a b then charAgent b else ' ' | b <- agentsOf (fst s) ] where
 
 metaKnowledgeOfIn :: Agent -> Protocol -> State -> [Char]
 metaKnowledgeOfIn a proto s = [ charFor b | b <- agentsOf (fst s) ] where
-  charFor b = if s |= K a proto Bot then '_' else head . show . fromEnum $ s |= K a proto (expert b)
+  charFor b =
+    if s |= K a proto Bot
+    then '_'
+    else (if s |= K a proto (expert b) then toUpper (charAgent b) else ' ')
 
 knowledgeLine :: State -> Protocol -> String
 knowledgeLine s proto = concat
-  [ "  " ++ (knowledgeOfIn a s ++ "-" ++ metaKnowledgeOfIn a proto s)
+  [ "  " ++ (knowledgeOfIn a s ++ " " ++ metaKnowledgeOfIn a proto s)
   | a <- agentsOf (fst s) ]
 
 knowledgeOverview :: State -> Protocol -> IO ()
 knowledgeOverview (g,sigma) proto = do
-  -- title line
   putStr "  "
-  mapM_ (\_ -> do
-            putStr $ "  " ++ map charAgent (agentsOf g) ++ map charAgent (agentsOf g)
-        ) (agentsOf g)
-  putStr "\n  "
   putStrLn $ knowledgeLine (g,[]) proto
   mapM_ (\n -> do
             let s = (g, take n sigma)
