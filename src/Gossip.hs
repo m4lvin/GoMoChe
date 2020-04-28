@@ -30,7 +30,10 @@ ppCall :: Call -> String
 ppCall (x,y) = show x ++ show y
 
 parseCall :: String -> Call
-parseCall [x,y] = (read [x], read [y])
+parseCall [x,y] =
+  if x `elem` ['a'..'z'] && y `elem` ['a'..'z']
+  then (fromEnum x - fromEnum 'a', fromEnum y - fromEnum 'a')
+  else (read [x], read [y])
 parseCall foo   = error $ "This is not a call: " ++ show foo
 
 ppSequence :: Sequence -> String
