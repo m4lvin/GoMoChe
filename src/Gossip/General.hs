@@ -165,27 +165,26 @@ instance Show Protocol where
     c = variables !! n
     d = variables !! (n + 1)
 
-lns :: Protocol
-lns (x, y) = Neg $ S x y
-
-cmo :: Protocol
-cmo (x, y) = Conj [ Neg (C x y), Neg (C y x) ]
-
-cmoSuper :: Protocol
-cmoSuper (x, y) = Conj [ Neg (superExpert x cmo) , Neg (C x y), Neg (C y x) ]
-
-cmoWLOG :: Protocol
-cmoWLOG (x, y) = if x < y then Conj [ Neg (C x y), Neg (C y x) ] else Bot
-
 anyCall,noCall :: Protocol
 anyCall = const Top
 noCall = const Bot
 
-anySuper :: Protocol
-anySuper (x, _) = Neg (superExpert x anyCall)
+-- | Learn New Secrets
+lns :: Protocol
+lns (x, y) = Neg $ S x y
 
-anySuperWLOG :: Protocol
-anySuperWLOG (x, y) = if x < y then Neg (superExpert x anyCall) else Bot
+-- | Call Me Once
+cmo :: Protocol
+cmo (x, y) = Conj [ Neg (C x y), Neg (C y x) ]
+
+-- | Call Me Once with x < y, without loss of generality
+cmoWLOG :: Protocol
+cmoWLOG (x, y) = if x < y then Conj [ Neg (C x y), Neg (C y x) ] else Bot
+
+-- | Possible Information Growth
+pig :: Protocol
+pig (x,y) = HatK x anyCall $
+  ExistsAg (\z -> (S x z `con` Neg (S y z))  `dis` (Neg (S x z) `con` S y z))
 
 type State = (Graph,Sequence)
 

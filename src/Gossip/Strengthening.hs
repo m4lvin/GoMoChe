@@ -15,6 +15,10 @@ strengSoft     p (a,b) = Conj [ p (a,b) , HatK a p $ Box (Call a b) (Dia (protoT
 strengStepHard p (a,b) = Conj [ p (a,b) , K    a p $ Box (Call a b) (Disj [allExperts, protoCanGoOn p]) ]
 strengStepSoft p (a,b) = Conj [ p (a,b) , HatK a p $ Box (Call a b) (Disj [allExperts, protoCanGoOn p]) ]
 
+-- | Super experts no longer make calls.
+super :: Protocol -> Protocol
+super proto (x, y) = Conj [ Neg (superExpert x cmo) , proto (x,y) ]
+
 -- count the number of (successful, not successful) sequences
 statistics :: Protocol -> State -> (Int,Int)
 statistics proto (g,sigma) =
