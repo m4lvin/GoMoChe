@@ -49,7 +49,7 @@ charSequence :: [(Int, Int)] -> [Char]
 charSequence = intercalate ";" . map charCall where
 
 parseSequence :: String -> Sequence
-parseSequence = map parseCall . splitWhere ';'
+parseSequence = map parseCall . splitWhereAny [';', ' ', '-']
 
 -- | Is this agent involved in this call?
 isin :: Agent -> Call -> Bool

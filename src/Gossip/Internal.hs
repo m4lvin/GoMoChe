@@ -22,6 +22,12 @@ splitWhere a str = case break (== a) str of
   (xs,[_a])  -> [xs]
   (xs,_a:ys) -> xs : splitWhere a ys
 
+splitWhereAny :: Eq a => [a] -> [a] -> [[a]]
+splitWhereAny as str = case break (`elem` as) str of
+  (xs,[])    -> [xs]
+  (xs,[_a])  -> [xs]
+  (xs,_a:ys) -> xs : splitWhereAny as ys
+
 setUnion :: Ord a => Set (Set a) -> Set a
 setUnion = Set.unions . Set.toList
 

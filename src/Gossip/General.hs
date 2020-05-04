@@ -340,10 +340,11 @@ knowledgeOfIn a s = [ if s |= S a b then charAgent b else ' ' | b <- agentsOf (f
 
 metaKnowledgeOfIn :: Agent -> Protocol -> State -> [Char]
 metaKnowledgeOfIn a proto s = [ charFor b | b <- agentsOf (fst s) ] where
-  charFor b =
-    if s |= K a proto Bot
-    then '_'
-    else (if s |= K a proto (expert b) then toUpper (charAgent b) else ' ')
+  charFor b
+    | s |= Neg (expert b)       = ' '
+    | s |= K a proto Bot        = '_'
+    | s |= K a proto (expert b) = toUpper (charAgent b)
+    | otherwise                 = ' '
 
 knowledgeLine :: State -> Protocol -> String
 knowledgeLine s proto = concat
