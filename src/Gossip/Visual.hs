@@ -71,33 +71,33 @@ showCallShort (x,y) = [ ['a' ..] !! x, ['a'..] !! y ]
 -- - history length until which the nodes should be ranked on the same level
 -- - the execution tree, generated with tree or norepTree
 dotTreeWith :: [Agent] -> Int -> Int -> Protocol -> ExecutionTree -> GenGV.DotGraph String
-dotTreeWith drawAgents showLimit rankLimit proto tpc@(Node (g,_) _) =
+dotTreeWith drawAgents showLimit rankLimit proto tpc@(Node (m,g,_) _) =
   GenGV.DotGraph { GenGV.strictGraph = False
                  , GenGV.directedGraph = True
                  , GenGV.graphID = Just (Str $ pack "G")
                  , GenGV.graphStatements = Seq.fromList $ stmtLoop tpc ++ stmtRanks } where
-    myNodeID (_,hist) = ppSequence hist
+    myNodeID (_,_,hist) = ppSequence hist
     stmtLoop :: ExecutionTree -> [GenGV.DotStatement String]
     stmtLoop (Node n cts) = concat
       [ [ GenGV.SG $ GenGV.DotSG { GenGV.isCluster = False
-                                 , GenGV.subGraphID = Just (Str (pack $ "subgraph-" ++ myNodeID n))
-                                 , GenGV.subGraphStmts = Seq.fromList $ stmtLoop t }
-        | (_,t@(Node (_,nexthist) _)) <- take 100 cts, length nexthist <= showLimit ]
+                                   , GenGV.subGraphID = Just (Str (pack $ "subgraph-" ++ myNodeID n))
+                                   , GenGV.subGraphStmts = Seq.fromList $ stmtLoop t }
+                     | (_,t@(Node (_,_,nexthist) _)) <- take 100 cts, length nexthist <= showLimit ]
       , [ GenGV.DN $ DotNode (myNodeID n) [toLabel (ppGraphShort (currentGraph n))] ]
       , map GenGV.DE $
-            [ DotEdge (myNodeID n) (myNodeID n') [toLabel (showCallShort c)] | (c,Node n'@(_,nexthist) _) <- take 100 cts, length nexthist <= showLimit ] -- calls arrows
+            [ DotEdge (myNodeID n) (myNodeID n') [toLabel (showCallShort c)] | (c,Node n'@(_,_,nexthist) _) <- take 100 cts, length nexthist <= showLimit ] -- calls arrows
         ++  [ DotEdge (myNodeID n) (myNodeID n') [toLabel (['a'..] !! a), Dir NoDir, Style [SItem Dashed []]] -- epistemic edges
-            | a <- agentsOf (fst n), n' <- epistAlt a proto n, n < n', a `elem` drawAgents ]
+            | a <- agentsOf n, n' <- epistAlt a proto n, n < n', a `elem` drawAgents ]
       ]
     stmtRanks :: [GenGV.DotStatement String]
-    stmtRanks = concat [ rankTheSame [(g,h) | h <- hs] | hs <- groupedSequences ] where
+    stmtRanks = concat [ rankTheSame [(m,g,h) | h <- hs] | hs <- groupedSequences ] where
       groupedSequences = groupBy ((==) `on` length) . sortBy (compare `on` length) $ allSequences
       allSequences = filter ((<= showLimit) . length) $ filter ((<= rankLimit) . length) $ sequencesOf tpc
       sequencesOf :: ExecutionTree -> [Sequence]
       sequencesOf (Node _ cts) = [] : [ c:h | (c, tpc') <- take 100 cts, h <- sequencesOf tpc' ]
       rankTheSame :: [State] -> [GenGV.DotStatement String]
       rankTheSame ns = [ GenGV.SG  GenGV.DotSG  { GenGV.isCluster = False
-                                                , GenGV.subGraphID = Just (Str (pack $ "ranking-" ++ show (length (snd $ head ns))))
+                                                , GenGV.subGraphID = Just (Str (pack $ "ranking-" ++ show (length (historyOf $ head ns))))
                                                 , GenGV.subGraphStmts = Seq.fromList $
                                                         GenGV.GA (GraphAttrs [Rank SameRank]) :
                                                         [ GenGV.DN $ DotNode (myNodeID n') [] | n' <- ns ]

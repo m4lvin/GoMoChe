@@ -21,8 +21,9 @@ type Graph = (Relation, Relation)
 
 class ProvidesAgentSet a where agentsOf :: a -> [Agent]
 instance ProvidesAgentSet Relation where agentsOf r = [0..(length r - 1)]
-instance ProvidesAgentSet b => ProvidesAgentSet (b,c) where
-  agentsOf (x,_) = agentsOf x
+instance ProvidesAgentSet Graph where agentsOf = agentsOf . fst
+instance ProvidesAgentSet b => ProvidesAgentSet (a,b,c) where
+  agentsOf (_,x,_) = agentsOf x
 
 type Call = (Agent,Agent)
 type Sequence = [Call]
@@ -56,6 +57,9 @@ parseSequence = map parseCall . splitWhereAny [';', ' ', '-']
 isin :: Agent -> Call -> Bool
 isin a (x,y) = a `elem` [x,y]
 
+-- | Subsequence of the calls involving this agent.
+reduction :: Agent -> Sequence -> Sequence
+reduction a = filter (a `isin`)
 
 -- Examples of relations and initial graphs --
 

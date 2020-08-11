@@ -11,20 +11,20 @@ import Gossip.General
 data ExecutionTree = Node State [(Call,ExecutionTree)] deriving (Eq)
 
 instance ProvidesAgentSet ExecutionTree where
-  agentsOf (Node n _) = agentsOf $ fst n
+  agentsOf (Node n _) = agentsOf n
 
 
 -- MAKE TREES
 
 localTree :: LocalProtocol -> State -> ExecutionTree
-localTree loproto root = Node root [ (c, localTree loproto (root `pointCall` c)) | c <- loproto (uncurry calls root) ]
+localTree loproto root = Node root [ (c, localTree loproto (root `pointCall` c)) | c <- loproto (currentGraph root) ]
 
 -- | generate execution tree for a general protocol
 tree :: Protocol -> State -> ExecutionTree
-tree proto point@(g,sigma) =
+tree proto point@(m,g,sigma) =
   Node point [ (c, goOnWith c) | c <- allowedCalls proto point ]
   where
-    goOnWith c = tree proto (g,sigma ++ [c])
+    goOnWith c = tree proto (m,g,sigma ++ [c])
 
 -- | Generate execution tree for a general protocol up to given depth.
 treeUpTo :: Int -> Protocol -> State -> ExecutionTree
@@ -35,8 +35,8 @@ treeUpTo k proto point@(g,sigma) =
 
 -- | summarize a tree to numbers pf (solved, stuck) branches
 sumTree :: ExecutionTree -> (Int,Int)
-sumTree (Node n []) | isSolved (uncurry calls n) = (1,0)
-                    | otherwise                  = (0,1)
+sumTree (Node n []) | isSolved (currentGraph n) = (1,0)
+                    | otherwise                 = (0,1)
 sumTree (Node _ ts) = pairSum $ map (sumTree . snd) ts where
   pairSum []           = (0,0)
   pairSum ((x,y):rest) = (x + xs, y + ys) where (xs,ys) = pairSum rest
@@ -63,10 +63,10 @@ hardUBD proto fullTree = hardUBD' fullTree where
   hardUBD' (Node p cs) = Node p $ concatMap purge cs where
     purge (c@(a,b), newsubTree) =
       [ (c, hardUBD' newsubTree) | not $ any (toBeRemovedAt (a,b)) (epistAlt a proto p) ]
-    toBeRemovedAt (a,b) (g,sigma') =
-      isJust (findInTree (g,sigma'++[(a,b)]) fullTree)
-      && isTerminal (fromJust $ findInTree (g,sigma'++[(a,b)]) fullTree)
-      && eval (g,sigma'++[(a,b)]) (Neg allExperts)
+    toBeRemovedAt (a,b) (m,g,sigma') =
+      isJust (findInTree (m,g,sigma'++[(a,b)]) fullTree)
+      && isTerminal (fromJust $ findInTree (m,g,sigma'++[(a,b)]) fullTree)
+      && eval (m,g,sigma'++[(a,b)]) (Neg allExperts)
 
 -- | Soft Uniform Backward Defoliation
 softUBD :: Protocol -> ExecutionTree -> ExecutionTree
@@ -75,10 +75,10 @@ softUBD proto fullTree = softUBD' fullTree where
   softUBD' (Node p cs) = Node p $ concatMap purge cs where
     purge (c@(a,b), newsubTree) =
       [ (c, softUBD' newsubTree) | any (toBeKept (a,b)) (epistAlt a proto p) ]
-    toBeKept (a,b) (g,sigma') =
-      isJust (findInTree (g,sigma'++[(a,b)]) fullTree)
-      && (  not (isTerminal (fromJust $ findInTree (g,sigma'++[(a,b)]) fullTree))
-         || eval (g,sigma'++[(a,b)]) allExperts)
+    toBeKept (a,b) (m,g,sigma') =
+      isJust (findInTree (m,g,sigma'++[(a,b)]) fullTree)
+      && (  not (isTerminal (fromJust $ findInTree (m,g,sigma'++[(a,b)]) fullTree))
+         || eval (m,g,sigma'++[(a,b)]) allExperts)
 
 -- SHOW TREES
 

@@ -32,15 +32,16 @@ instance Arbitrary ArbitraryInitialGG where
 newtype ArbitraryPointAgent = ArbPA (State, Agent)
 
 instance Show ArbitraryPointAgent where
-  show (ArbPA ((g,h),a)) = concat [ "ArbPA ((parseGraph \"", ppGraph g
-                                  , "\", parseSequence \"", ppSequence h
-                                  , "\"),", show a, ")" ]
+  show (ArbPA ((mode,g,h),a)) = concat [ "ArbPA ((", show mode, ","
+                                       , "parseGraph \"", ppGraph g
+                                       , "\", parseSequence \"", ppSequence h
+                                       , "\"),", show a, ")" ]
 
 instance Arbitrary ArbitraryPointAgent where
   arbitrary = do
     (ArbIGG g) <- arbitrary
-    sequ <- elements (sequences lns (g,[]))
+    sequ <- elements (sequences lns (Sync,g,[]))
     time <- choose (0,length sequ)
     let sigma = take time sequ
     let agent = 0
-    return $ ArbPA ((g, sigma), agent)
+    return $ ArbPA ((Sync, g, sigma), agent)
