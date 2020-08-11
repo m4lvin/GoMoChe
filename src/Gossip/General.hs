@@ -240,6 +240,38 @@ epistAlt a proto (Sync, g, history) =
               | (_,g',cs') <- epistAlt a proto (Sync,g,prev)
               , altevent <- allowedCalls proto (Sync,g',cs')
               , not $ a `isin` altevent ]
+-- | A first try to compute the asynchronous epistemic alternatives.
+-- NOTE: we assume for now that the async relation extends the sync relation.
+-- This seems true for ANY, but there are protocol (conditions) where this is wrong!?
+epistAlt a proto (ASync,g,history) =
+  [ (ASync,g,altHistory)
+  | k <- [(length (a `reduction` history)) .. totalBound]
+  , altHistory <- sequencesUpTo proto (ASync, g, []) k
+  , a `reduction` history == a `reduction` altHistory
+  , -- for all calls where a is involved, check localSameFor!
+  and [  localSameFor i (calls g s1) (calls g s2)
+      | (k1,k2) <- callMap a history altHistory
+      , let s1 = take (k1+1) history
+      , let s2 = take (k2+1) altHistory
+      , i <- let (x,y) = last history in [x,y] ]
+  ]
+
+totalBound :: Int
+totalBound = 5
+
+-- | Given two sequences which have the same a-reduction, return pairs of indices for the same calls.
+-- Example: callMap 3 [(0,1),(2,3),(0,3),(0,2)] [(2,3),(0,1),(0,3)] == [(1,0),(2,2)]
+callMap :: Agent -> Sequence -> Sequence -> [(Int,Int)]
+callMap = callMap' 0 0 where
+  callMap' :: Int -> Int -> Agent -> Sequence -> Sequence -> [(Int,Int)]
+  callMap' _  _  _ []     _      = [ ]
+  callMap' nc nd a (c:cs) []     | a `isin` c = error "sequences do not have the same reduction!"
+                                 | otherwise = callMap' (nc+1) nd a cs []
+  callMap' nc nd a (c:cs) (d:ds) | a `isin` c =
+                                     if c == d
+                                       then [(nc,nd)] ++ callMap' (nc+1) (nd+1) a cs     ds
+                                       else              callMap' nc     (nd+1) a (c:cs) ds
+                                 | otherwise =           callMap' (nc+1) nd     a cs     (d:ds)
 
 -- Semantics --
 

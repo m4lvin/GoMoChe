@@ -172,6 +172,12 @@ main = hspec $ parallel $ do
     it "CMO super after ab;bc can continue with 4 or 3 calls" $
       nub (map length $ sequences (super cmo) (Sync, totalInit 4, [(0,1),(1,2)])) `shouldBe` [4,3]
 
+  describe "ASync" $ do
+    it "epistAlt 3 is the same when last call does not involve 3" $
+      epistAlt 1 (wlog anyCall) (ASync, totalInit 3, parseSequence "01;12")
+      `shouldBe`
+      epistAlt 1 (wlog anyCall) (ASync, totalInit 3, parseSequence "01;12;02")
+
 
 -- | Check that epistAlt describes a (in proto) reflexive, transitive, (in proto) symmetric relation.
 checkEpistAlt :: Agent -> Protocol -> State -> [Bool]
