@@ -210,6 +210,7 @@ possibleCalls state =
 allowedCalls :: Protocol -> State -> [Call]
 allowedCalls proto state = filter (eval state . proto) (possibleCalls state)
 
+-- | Do the two given graphs look the same for the given agent?
 localSameFor :: Agent -> Graph -> Graph -> Bool
 localSameFor a s s' = (fst s `at` a) == (fst s' `at` a) && (snd s `at` a) == (snd s' `at` a)
 
@@ -248,16 +249,23 @@ epistAlt a proto (ASync,g,history) =
   | k <- [(length (a `reduction` history)) .. totalBound]
   , altHistory <- sequencesUpTo proto (ASync, g, []) k
   , a `reduction` history == a `reduction` altHistory
-  , -- for all calls where a is involved, check localSameFor!
-  and [  localSameFor i (calls g s1) (calls g s2)
+  , alwaysLocalSameFor g a history altHistory
+  ]
+
+-- | Check localSameFor for caller and callee after all calls where a was involved.
+-- Precondition: history and altHistory have the same a-reduction.
+alwaysLocalSameFor :: Graph -> Agent -> Sequence -> Sequence -> Bool
+alwaysLocalSameFor g a history altHistory =
+  and [ localSameFor i (calls g s1) (calls g s2)
       | (k1,k2) <- callMap a history altHistory
       , let s1 = take (k1+1) history
       , let s2 = take (k2+1) altHistory
-      , i <- let (x,y) = last history in [x,y] ]
-  ]
+      , if last s1 /= last s2 then error "this should not happen" else True
+      , i <- let (x,y) = last s1 in [x,y] -- NOTE: crucial, use s1 or s2, but not history here!!!
+      ]
 
 totalBound :: Int
-totalBound = 5
+totalBound = 7
 
 -- | Given two sequences which have the same a-reduction, return pairs of indices for the same calls.
 -- Example: callMap 3 [(0,1),(2,3),(0,3),(0,2)] [(2,3),(0,1),(0,3)] == [(1,0),(2,2)]
@@ -347,6 +355,7 @@ sequences proto (m,g,sigma)
   | otherwise = [ c : rest | c <- allowedCalls proto (m,g,sigma)
                            , rest <- sequences proto (m,g,sigma++[c]) ]
 
+-- | All maximal sequences of up to n calls after the given state.
 sequencesUpTo :: Protocol -> State -> Int -> [Sequence]
 sequencesUpTo _     (_,_,_    ) 0 = [ [] ]
 sequencesUpTo proto (m,g,sigma) n
