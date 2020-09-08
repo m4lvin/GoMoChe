@@ -28,6 +28,11 @@ splitWhereAny as str = case break (`elem` as) str of
   (xs,[_a])  -> [xs]
   (xs,_a:ys) -> xs : splitWhereAny as ys
 
+addAt :: [a] -> a -> Int -> [a]
+addAt xs     y 0 = y : xs
+addAt (x:xs) y k = x : addAt xs y (k-1)
+addAt []     _ _ = error "cannot add within an empty list!"
+
 setUnion :: Ord a => Set (Set a) -> Set a
 setUnion = Set.unions . Set.toList
 

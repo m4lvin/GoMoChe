@@ -150,6 +150,14 @@ existsAgWith cond form = ExistsAg (\x -> if cond x then form x else Bot)
 ifthenelse :: Form -> Prog -> Prog -> Prog
 ifthenelse f p q = Cup [Seq [Test f, p], Seq [Test (Neg f), q]]
 
+-- | Repeat a program exactly k many times:
+iter :: Int -> Prog -> Prog
+iter k p = Seq (take k $ repeat p)
+
+-- | Repeat a program up to k many times:
+iterUpTo :: Int -> Prog -> Prog
+iterUpTo k p = Cup [ iter j p | j <- [0..k] ]
+
 -- General Protocols --
 type Protocol = (Agent,Agent) -> Form
 
