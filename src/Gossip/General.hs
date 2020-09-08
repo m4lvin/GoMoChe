@@ -275,6 +275,18 @@ alwaysLocalSameFor g a history altHistory =
 totalBound :: Int
 totalBound = 7
 
+-- | All possible ways to add a call such that the given agent does not notice:
+-- TODO: use this as an alternative to compute epistAlt for ASync?
+addCallUnobsFor :: Graph-> Agent -> Sequence -> [Sequence]
+addCallUnobsFor g a sigma =
+  [ tau
+  | b <- agentsOf g \\ [a]
+  , c <- agentsOf g \\ [a,b]
+  , k <- [0..(length sigma)]
+  , let tau = addAt sigma (b,c) k
+  , alwaysLocalSameFor g a sigma tau
+  ]
+
 -- | Given two sequences which have the same a-reduction, return pairs of indices for the same calls.
 -- Example: callMap 3 [(0,1),(2,3),(0,3),(0,2)] [(2,3),(0,1),(0,3)] == [(1,0),(2,2)]
 callMap :: Agent -> Sequence -> Sequence -> [(Int,Int)]
