@@ -268,7 +268,7 @@ alwaysLocalSameFor g a history altHistory =
       | (k1,k2) <- callMap a history altHistory
       , let s1 = take (k1+1) history
       , let s2 = take (k2+1) altHistory
-      , if last s1 /= last s2 then error "this should not happen" else True
+      , last s1 == last s2 || error "last calls are not the same!"
       , i <- let (x,y) = last s1 in [x,y] -- NOTE: crucial, use s1 or s2, but not history here!!!
       ]
 

@@ -79,11 +79,11 @@ asyncFiveCallsNoSuperSucc = and [ s |= f | s <- states ] where
   states = [ (ASync, totalInit 4, parseSequence sigma) | sigma <- ["ab;cd", "ab;bc"] ]
   f = Box
     (iterUpTo 5 $ protoStep (wlog anyCall))
-    (Neg allExperts `dis` (Neg $ allSuperExperts (wlog anyCall)))
+    (Neg allExperts `dis` Neg (allSuperExperts (wlog anyCall)))
 
 -- The same, but show each result while running and stop if there is a counterexample.
 asyncFiveCallsNoSuperSucc' :: IO ()
-asyncFiveCallsNoSuperSucc' = mapM_ (print . (\s -> (s,if isGood s then error ("\n\nfound!\n" ++ ppSequence s ++ "\n\n") else False))) (tries 5) where
+asyncFiveCallsNoSuperSucc' = mapM_ (print . (\s -> (s, isGood s && error ("\n\nfound!\n" ++ ppSequence s ++ "\n\n")))) (tries 5) where
   -- sigma = parseSequence "ab;cd" -- start with two non-overlapping calls
   sigma = parseSequence "ab;bc" -- start with two overlapping calls
   tries = sequencesUpTo (wlog anyCall) (ASync, totalInit 4, sigma)
@@ -100,7 +100,7 @@ exampleNotSupSuccInThree =
 
 -- The same, but show each result while running and stop if there is a counterexample.
 exampleNotSupSuccInThree' :: IO ()
-exampleNotSupSuccInThree' = mapM_ (print . (\s -> (s, if isGood s then error ("\n\nfound!\n" ++ ppSequence s ++ "\n\n") else False))) (tries 1 ++ tries 2 ++ tries 3) where
+exampleNotSupSuccInThree' = mapM_ (print . (\s -> (s, isGood s && error ("\n\nfound!\n" ++ ppSequence s ++ "\n\n")))) (tries 1 ++ tries 2 ++ tries 3) where
   sigma = parseSequence "ac;ad;ac;bc;ac"
   tries = sequencesUpTo (wlog anyCall) (ASync, totalInit 4, sigma)
   isGood s = (ASync, totalInit 4, sigma ++ s) |=
