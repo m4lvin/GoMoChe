@@ -21,6 +21,7 @@ library
                   , Gossip.Random
                   , Gossip.Strengthening
                   , Gossip.Tree
+                  , Gossip.Unreliable
                   , Gossip.Visual
                   , Gossip.Internal
   hs-source-dirs:   src
