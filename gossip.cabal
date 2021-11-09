@@ -1,8 +1,8 @@
-name:          gossip
+name:          GoMoChe
 version:       0.1.0.0
 synopsis:      Explicit Epistemic Model Checking for Dynamic Gossip
 description:   See README.md for related references.
-homepage:      https://github.com/m4lvin/gossip
+homepage:      https://github.com/m4lvin/GoMoChe
 license:       GPL-3
 license-file:  LICENSE
 author:        Malvin Gattinger
@@ -27,7 +27,6 @@ library
   build-depends:    base >= 4.7 && < 5
                   , containers
                   , graphviz
-                  , parallel
                   , process
                   , QuickCheck
                   , temporary
@@ -39,7 +38,7 @@ test-suite results
   ghc-options:      -Wall
   hs-source-dirs:   test
   build-depends:    base
-                  , gossip
+                  , GoMoChe
                   , hspec
                   , QuickCheck
                   , silently
@@ -50,7 +49,7 @@ benchmark tables
   main-is:          tables.hs
   type:             exitcode-stdio-1.0
   build-depends:    base >= 4.7 && < 5
-                  , gossip
+                  , GoMoChe
 
 source-repository head
   type:             git

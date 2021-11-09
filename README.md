@@ -24,8 +24,8 @@ Related references:
 
 You should have the [Haskell Tool Stack](https://haskellstack.org) installed.
 
-    git clone https://github.com/m4lvin/gossip.git
-    cd gossip
+    git clone https://github.com/m4lvin/GoMoChe.git
+    cd GoMoChe
     stack build
     stack ghci
 
