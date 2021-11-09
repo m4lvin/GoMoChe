@@ -167,13 +167,13 @@ main = hspec $ do
 
   describe "e2 examples" $ do
     it "CMO super after ab;cd is super succ" $
-      (totalInit 4, [(0,1),(2,3)]) |= isStronglySuperSuccForm cmo cmoSuper
+      (totalInit 4, [(0,1),(2,3)]) |= isStronglySuperSuccForm cmo (super cmo)
     it "CMO super after ab;cd always has 3 calls left" $
-      nub (map length $ sequences cmoSuper (totalInit 4, [(0,1),(2,3)])) `shouldBe` [3]
+      nub (map length $ sequences (super cmo) (totalInit 4, [(0,1),(2,3)])) `shouldBe` [3]
     it "CMO super after ab;bc is not strongly super succ" $
-      (totalInit 4, [(0,1),(1,2)]) |= Neg (isStronglySuperSuccForm cmo cmoSuper)
+      (totalInit 4, [(0,1),(1,2)]) |= Neg (isStronglySuperSuccForm cmo (super cmo))
     it "CMO super after ab;bc can continue with 4 or 3 calls" $
-      nub (map length $ sequences cmoSuper (totalInit 4, [(0,1),(1,2)])) `shouldBe` [4,3]
+      nub (map length $ sequences (super cmo) (totalInit 4, [(0,1),(1,2)])) `shouldBe` [4,3]
 
 
 -- | check that epistAlt describes a reflexive, transitive, symmetric relations
