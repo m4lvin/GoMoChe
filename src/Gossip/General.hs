@@ -152,7 +152,7 @@ ifthenelse f p q = Cup [Seq [Test f, p], Seq [Test (Neg f), q]]
 
 -- | Repeat a program exactly k many times:
 iter :: Int -> Prog -> Prog
-iter k p = Seq (take k $ repeat p)
+iter k p = Seq (replicate k p)
 
 -- | Repeat a program up to k many times:
 iterUpTo :: Int -> Prog -> Prog
@@ -297,9 +297,9 @@ callMap = callMap' 0 0 where
                                  | otherwise = callMap' (nc+1) nd a cs []
   callMap' nc nd a (c:cs) (d:ds) | a `isin` c =
                                      if c == d
-                                       then [(nc,nd)] ++ callMap' (nc+1) (nd+1) a cs     ds
-                                       else              callMap' nc     (nd+1) a (c:cs) ds
-                                 | otherwise =           callMap' (nc+1) nd     a cs     (d:ds)
+                                       then (nc,nd) : callMap' (nc+1) (nd+1) a cs     ds
+                                       else           callMap' nc     (nd+1) a (c:cs) ds
+                                 | otherwise =        callMap' (nc+1) nd     a cs     (d:ds)
 
 -- Semantics --
 
@@ -378,16 +378,19 @@ sequences proto (m,g,sigma)
 -- | All maximal sequences of up to n calls after the given state.
 sequencesUpTo :: Protocol -> State -> Int -> [Sequence]
 sequencesUpTo _     (_,_,_    ) 0 = [ [] ]
-sequencesUpTo proto (m,g,sigma) n
-  | null (allowedCalls proto (m,g,sigma)) = [ [] ]
-  | otherwise = [ c : rest | c <- allowedCalls proto (m,g,sigma)
-                           , rest <- sequencesUpTo proto (m,g,sigma++[c]) (n-1) ]
+sequencesUpTo proto (m,g,sigma) n =
+  case allowedCalls proto (m,g,sigma) of
+    [] -> [ [] ]
+    cs -> [ c : rest | c <- cs
+                     , rest <- sequencesUpTo proto (m,g,sigma++[c]) (n-1) ]
 
 isSuccSequence :: State -> Sequence -> Bool
 isSuccSequence (_,g,sigma) cs = isSolved (calls g (sigma ++ cs))
 
 isSuperSuccSequence :: Protocol -> State -> Sequence -> Bool
-isSuperSuccSequence proto (m,g,sigma) cs = (m, g, sigma ++ cs) |= ForallAg (`superExpert` proto)
+isSuperSuccSequence proto (m,g,sigma) cs =
+  isSuccSequence (m,g,sigma) cs &&
+  (m, g, sigma ++ cs) |= ForallAg (`superExpert` proto)
 
 compareSequences :: State -> [Protocol] -> [(Sequence,[Bool])]
 compareSequences s protos =

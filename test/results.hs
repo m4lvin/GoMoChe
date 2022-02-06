@@ -173,7 +173,7 @@ main = hspec $ parallel $ do
       nub (map length $ sequences (super cmo) (Sync, totalInit 4, [(0,1),(1,2)])) `shouldBe` [4,3]
 
   describe "ASync" $ do
-    it "epistAlt 3 is the same when last call does not involve 3" $
+    it "epistAlt 1 is the same when last call does not involve 1" $
       epistAlt 1 (wlog anyCall) (ASync, totalInit 3, parseSequence "01;12")
       `shouldBe`
       epistAlt 1 (wlog anyCall) (ASync, totalInit 3, parseSequence "01;12;02")
