@@ -222,10 +222,11 @@ allowedCalls proto state = filter (eval state . proto) (possibleCalls state)
 localSameFor :: Agent -> Graph -> Graph -> Bool
 localSameFor a s s' = (fst s `at` a) == (fst s' `at` a) && (snd s `at` a) == (snd s' `at` a)
 
--- Epistemic Alternatives: Points that an agent confuses with the given one.
--- Depends on the protocol. Note: synchronous, with initCK
--- TODO use Set Point instead?
+-- | Epistemic Alternatives
+-- List of states that an agent confuses with the given one.
+-- Depends on the commonly known protocol.
 epistAlt :: Agent -> Protocol -> State -> [State]
+-- Synchronous version:
 epistAlt _ _     (Sync, g, []     ) = [ (Sync, g, []) ] -- initial graph is common knowledge!
 epistAlt a proto (Sync, g, history) =
   let
@@ -249,9 +250,7 @@ epistAlt a proto (Sync, g, history) =
               | (_,g',cs') <- epistAlt a proto (Sync,g,prev)
               , altevent <- allowedCalls proto (Sync,g',cs')
               , not $ a `isin` altevent ]
--- | A first try to compute the asynchronous epistemic alternatives.
--- NOTE: we assume for now that the async relation extends the sync relation.
--- This seems true for ANY, but there are protocol (conditions) where this is wrong!?
+-- Asynchronous version:
 epistAlt a proto (ASync,g,history) =
   [ (ASync,g,altHistory)
   | k <- [(length (a `reduction` history)) .. totalBound]
@@ -260,16 +259,15 @@ epistAlt a proto (ASync,g,history) =
   , alwaysLocalSameFor g a history altHistory
   ]
 
--- | Check localSameFor for caller and callee after all calls where a was involved.
+-- | Check localSameFor for the other agent just before each call involving a.
 -- Precondition: history and altHistory have the same a-reduction.
 alwaysLocalSameFor :: Graph -> Agent -> Sequence -> Sequence -> Bool
 alwaysLocalSameFor g a history altHistory =
-  and [ localSameFor i (calls g s1) (calls g s2)
+  and [ localSameFor i (calls g (take k1 history)) (calls g (take k2 altHistory))
       | (k1,k2) <- callMap a history altHistory
-      , let s1 = take (k1+1) history
-      , let s2 = take (k2+1) altHistory
-      , last s1 == last s2 || error "last calls are not the same!"
-      , i <- let (x,y) = last s1 in [x,y] -- NOTE: crucial, use s1 or s2, but not history here!!!
+      , history !! k1 == altHistory !! k2 || error "calls are not the same! wrong callMap?"
+      , i <- let (x,y) = history !! k1 in [x,y]
+      , i /= a
       ]
 
 totalBound :: Int
@@ -287,13 +285,13 @@ addCallUnobsFor g a sigma =
   , alwaysLocalSameFor g a sigma tau
   ]
 
--- | Given two sequences which have the same a-reduction, return pairs of indices for the same calls.
+-- | Given two sequences with the same a-reduction, return index-pairs for matching calls.
 -- Example: callMap 3 [(0,1),(2,3),(0,3),(0,2)] [(2,3),(0,1),(0,3)] == [(1,0),(2,2)]
 callMap :: Agent -> Sequence -> Sequence -> [(Int,Int)]
 callMap = callMap' 0 0 where
   callMap' :: Int -> Int -> Agent -> Sequence -> Sequence -> [(Int,Int)]
   callMap' _  _  _ []     _      = [ ]
-  callMap' nc nd a (c:cs) []     | a `isin` c = error "sequences do not have the same reduction!"
+  callMap' nc nd a (c:cs) []     | a `isin` c = error $ "sequences do not have the same " ++ show a ++ "-reduction!"
                                  | otherwise = callMap' (nc+1) nd a cs []
   callMap' nc nd a (c:cs) (d:ds) | a `isin` c =
                                      if c == d
