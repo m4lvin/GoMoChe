@@ -18,7 +18,7 @@ import Gossip.Strengthening
 import Gossip.Tree
 
 main :: IO ()
-main = hspec $ do
+main = hspec $ parallel $ do
   describe "internal functions" $ do
     mapM_ (\n -> it ("length (allInits n) == (2^(n^2) - n)  for n = " ++ show n) $
         length (allInits n) `shouldBe` (2^(n^(2::Integer) - n)) ) [2..5]
