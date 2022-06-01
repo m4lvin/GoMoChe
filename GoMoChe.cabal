@@ -18,6 +18,7 @@ library
                   , Gossip.Examples
                   , Gossip.General
                   , Gossip.LocalProto
+                  , Gossip.Lucky
                   , Gossip.Random
                   , Gossip.Strengthening
                   , Gossip.Tree

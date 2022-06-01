@@ -12,6 +12,7 @@ import Gossip.Caas
 import Gossip.Examples
 import Gossip.General
 import Gossip.LocalProto
+import Gossip.Lucky
 import Gossip.Random
 import Gossip.Internal
 import Gossip.Strengthening
@@ -189,6 +190,9 @@ main = hspec $ parallel $ do
     let sigma = parseSequence "ac;ad;ac;bc;ac;cd;bd;ad" in
       it (ppSequence sigma ++ " is NOT super successful (ANY)") $
         (ASync, totalInit 4, sigma) |= Neg (allSuperExperts (wlog anyCall))
+    let sigma = parseSequence "ab;cd;ac;bd;ad;bc;ab;cd" in
+      it (ppSequence sigma ++ " is super successful in (ANY)") $
+        isSuperSuccSequence (wlog anyCall) (ASync, totalInit 4, []) sigma
 
   describe "Sync vs ASync" $
     let sigma = parseSequence "ab;cd;ac;ad;bc;ab;bd" in do
@@ -197,6 +201,10 @@ main = hspec $ parallel $ do
       it ("ASync: " ++ ppSequence sigma ++ " is NOT super successful (ANY)") $
         (ASync, totalInit 4, sigma) |= Neg (allSuperExperts (wlog anyCall))
 
+  describe "Lucky Calls" $ do
+    let sigma = parseSequence "ac;ad;ac;bc;ac" in
+      it ("Agent 0 is lucky in last call of " ++ ppSequence sigma) $
+        isLucky (ASync, totalInit 4, sigma) (wlog anyCall) 0
 
 -- | Check that epistAlt describes a (in proto) reflexive, transitive, (in proto) symmetric relation.
 checkEpistAlt :: Agent -> Protocol -> State -> [Bool]
