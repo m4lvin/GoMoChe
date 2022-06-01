@@ -21,7 +21,8 @@ type Graph = (Relation, Relation)
 
 class ProvidesAgentSet a where agentsOf :: a -> [Agent]
 instance ProvidesAgentSet Relation where agentsOf r = [0..(length r - 1)]
-instance ProvidesAgentSet Graph where agentsOf = agentsOf . fst
+instance ProvidesAgentSet b => ProvidesAgentSet (b,c) where
+  agentsOf (x,_) = agentsOf x
 
 type Call = (Agent,Agent)
 type Sequence = [Call]
@@ -43,10 +44,10 @@ charAgent :: Int -> Char
 charAgent = (!!) ['a'..]
 
 charCall :: Call -> String
-charCall = (\(x,y) -> charAgent x : charAgent y : [])
+charCall (x,y) = map charAgent [x,y]
 
 charSequence :: [(Int, Int)] -> [Char]
-charSequence = intercalate ";" . map charCall where
+charSequence = intercalate ";" . map charCall
 
 parseSequence :: String -> Sequence
 parseSequence = map parseCall . splitWhereAny [';', ' ', '-']

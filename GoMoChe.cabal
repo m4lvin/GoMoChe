@@ -34,7 +34,7 @@ library
 
 test-suite results
   type:             exitcode-stdio-1.0
-  main-is:          results.lhs
+  main-is:          results.hs
   ghc-options:      -Wall
   hs-source-dirs:   test
   build-depends:    base

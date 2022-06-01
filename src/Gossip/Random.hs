@@ -18,7 +18,7 @@ instance Arbitrary ArbitraryInitialGG where
     -- n <- choose (3,4::Int)
     n <- choose (3,3::Int)
     let ags = [(0::Int)..(n-1)]
-    phonebooks <- mapM (\i -> sublistOf ags >>= \rest -> fmap (sort.nub) (return $ i : rest)) ags
+    phonebooks <- mapM (\i -> sublistOf ags >>= \rest -> return $ (sort.nub) (i : rest)) ags
     let nRel = IntMap.fromList [ (k, IntSet.fromList $ phonebooks !! k ) | k <- [0..(n-1)] ]
     let sRel = ident n
     return $ ArbIGG (nRel,sRel)

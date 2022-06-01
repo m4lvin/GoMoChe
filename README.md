@@ -1,24 +1,6 @@
-# Explicit Epistemic Model Checking for Dynamic Gossip
+# GoMoChe - Gossip Model Checking
 
-Related references:
-
-- Hans van Ditmarsch, Malvin Gattinger, Louwe B. Kuijer, Pere Pardo:
-  [Strengthening Gossip Protocols using Protocol-Dependent Knowledge](https://malv.in/2019/StrengtheningGossipProtocols.pdf)
-  In: Journal of Applied Logics - IfCoLog Journal of Logics and their Applications, Volume 6, Number 1, 2019.
-
-- Chapter 6 "Dynamic Gossip"
-  in Malvin Gattinger: [New Directions in Model Checking Dynamic Epistemic Logic](https://malv.in/phdthesis)
-  PhD thesis at ILLC, University of Amsterdam, 2018.
-
-- Hans van Ditmarsch, Jan van Eijck, Pere Pardo, Rahim Ramezanian, François Schwarzentruber:
-  *Dynamic Gossip*.
-  In: Bulletin of the Iranian Mathematical Society (BIMS), 2018.
-  https://doi.org/10.1007/s41980-018-0160-4
-
-- Hans van Ditmarsch, Jan van Eijck, Pere Pardo, Rahim Ramezanian, François Schwarzentruber:
-  *Epistemic protocols for dynamic gossip*.
-  In: Journal of Applied Logic, Volume 20, 2017, Pages 1-31,
-  https://doi.org/10.1016/j.jal.2016.12.001
+A Haskell tool to analyse (dynamic) gossip protocols, including an epistemic model checker.
 
 ## Installation
 
@@ -76,3 +58,28 @@ If you have graphviz installed, you can visualize gossip graphs like this:
 
 The file `test/results.hs` contains a test suite that also covers most examples.
 You can run it with `stack clean; stack test --coverage`.
+
+## Related references:
+
+- Hans van Ditmarsch, Malvin Gattinger, Louwe B. Kuijer, Pere Pardo:
+  [Strengthening Gossip Protocols using Protocol-Dependent Knowledge](https://malv.in/2019/StrengtheningGossipProtocols.pdf)
+  In: Journal of Applied Logics - IfCoLog Journal of Logics and their Applications, Volume 6, Number 1, 2019.
+
+- Chapter 6 "Dynamic Gossip"
+  in Malvin Gattinger: [New Directions in Model Checking Dynamic Epistemic Logic](https://malv.in/phdthesis)
+  PhD thesis at ILLC, University of Amsterdam, 2018.
+
+- Hans van Ditmarsch, Jan van Eijck, Pere Pardo, Rahim Ramezanian, François Schwarzentruber:
+  *Dynamic Gossip*.
+  In: Bulletin of the Iranian Mathematical Society (BIMS), 2018.
+  https://doi.org/10.1007/s41980-018-0160-4
+
+- Hans van Ditmarsch, Jan van Eijck, Pere Pardo, Rahim Ramezanian, François Schwarzentruber:
+  *Epistemic protocols for dynamic gossip*.
+  In: Journal of Applied Logic, Volume 20, 2017, Pages 1-31,
+  https://doi.org/10.1016/j.jal.2016.12.001
+
+## Other Tools
+
+- *ElmGossip: Explore dynamic gossip in your browser* by Ramon Meffert
+  <https://github.com/RamonMeffert/elm-gossip>

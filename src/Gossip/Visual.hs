@@ -72,11 +72,11 @@ dotTreeWith drawAgents showLimit rankLimit proto tpc@(Node (g,_) _) =
     myNodeID (_,hist) = ppSequence hist
     stmtLoop :: ExecutionTree -> [GenGV.DotStatement String]
     stmtLoop (Node n cts) = concat
-      [ map GenGV.SG [ GenGV.DotSG { GenGV.isCluster = False
-                                   , GenGV.subGraphID = Just (Str (pack $ "subgraph-" ++ myNodeID n))
-                                   , GenGV.subGraphStmts = Seq.fromList $ stmtLoop t }
-                     | (_,t@(Node (_,nexthist) _)) <- take 100 cts, length nexthist <= showLimit ]
-      , map GenGV.DN [ DotNode (myNodeID n) [toLabel (ppGraphShort (uncurry calls n))] ]
+      [ [ GenGV.SG $ GenGV.DotSG { GenGV.isCluster = False
+                                 , GenGV.subGraphID = Just (Str (pack $ "subgraph-" ++ myNodeID n))
+                                 , GenGV.subGraphStmts = Seq.fromList $ stmtLoop t }
+        | (_,t@(Node (_,nexthist) _)) <- take 100 cts, length nexthist <= showLimit ]
+      , [ GenGV.DN $ DotNode (myNodeID n) [toLabel (ppGraphShort (currentGraph n))] ]
       , map GenGV.DE $
             [ DotEdge (myNodeID n) (myNodeID n') [toLabel (showCallShort c)] | (c,Node n'@(_,nexthist) _) <- take 100 cts, length nexthist <= showLimit ] -- calls arrows
         ++  [ DotEdge (myNodeID n) (myNodeID n') [toLabel (['a'..] !! a), Dir NoDir, Style [SItem Dashed []]] -- epistemic edges

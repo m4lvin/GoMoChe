@@ -1,6 +1,3 @@
-% !TEX root = ../../main.tex
-
-\begin{code}
 module Main where
 
 import Control.Exception (evaluate,try,IOException)
@@ -82,7 +79,7 @@ main = hspec $ do
     prop "isStronglyUnsucc localLns iff isStronglyUnsuccForm lns" $
       \(ArbIGG g) -> isStronglyUnsucc localLns g === eval (g,[]) (isStronglyUnsuccForm lns)
     prop "epistAlt with LNS is an equivalence relation" $
-      \(ArbPA (p,i)) -> checkEpistAlt i lns p
+      \(ArbPA (p,i)) -> checkEpistAlt i lns p `shouldBe` [True,True,True]
 
   describe "concrete examples" $ do
     describe "isWeaklySucc localLns" $ do
@@ -176,11 +173,11 @@ main = hspec $ do
       nub (map length $ sequences (super cmo) (totalInit 4, [(0,1),(1,2)])) `shouldBe` [4,3]
 
 
--- | check that epistAlt describes a reflexive, transitive, symmetric relations
-checkEpistAlt :: Agent -> Protocol -> State -> Bool
-checkEpistAlt a proto here = reflexive && transitive && symmetric where
+-- | Check that epistAlt describes a (in proto) reflexive, transitive, (in proto) symmetric relation.
+checkEpistAlt :: Agent -> Protocol -> State -> [Bool]
+checkEpistAlt a proto here@(g, sigma)  = [reflexive, transitive, symmetric] where
   reachables = epistAlt a proto here
-  reflexive = here `elem` reachables
+  inProtocol = isSequenceOf proto (g, []) sigma
+  reflexive = not inProtocol || (here `elem` reachables)
   transitive = all (`elem` reachables) $ concatMap (epistAlt a proto) reachables
-  symmetric = all (elem here) (map (epistAlt a proto) reachables)
-\end{code}
+  symmetric = not inProtocol || all (elem here . epistAlt a proto) reachables

@@ -45,7 +45,7 @@ data Prog = Test Form
 -- NOTE Showing and comparing nested formulas with "\x ->" agent variables is tricky.
 -- Our solution for now is to string-replace agents by variables, depending on nesting level.
 
-variables :: [Char]
+variables :: String
 variables = "zyxwvutsZYXWVUTS"
 
 type FormWithAgentVar = Agent -> Form
@@ -177,10 +177,6 @@ lns (x, y) = Neg $ S x y
 cmo :: Protocol
 cmo (x, y) = Conj [ Neg (C x y), Neg (C y x) ]
 
--- | Call Me Once with x < y, without loss of generality
-cmoWLOG :: Protocol
-cmoWLOG (x, y) = if x < y then Conj [ Neg (C x y), Neg (C y x) ] else Bot
-
 -- | Possible Information Growth
 pig :: Protocol
 pig (x,y) = HatK x anyCall $
@@ -281,7 +277,7 @@ runs state     (Star p)     = lfp loop $ Set.singleton state where
 -- Abbreviations to run protocols and describe success in formulas --
 
 protoCanGoOn, protoFinished :: Protocol -> Form
-protoCanGoOn  proto = ExistsAg (\x -> ExistsAg (\y -> (Neg $ Same x y) `con` Conj [       N x y,       proto (x,y) ]))
+protoCanGoOn  proto = ExistsAg (\x -> ExistsAg (\y -> Neg (Same x y) `con` Conj [       N x y,       proto (x,y) ]))
 protoFinished proto = ForallAg (\x -> ForallAg (\y -> Same x y `dis` Disj [ Neg $ N x y, Neg $ proto (x,y) ]))
 
 protoTerm :: Protocol -> Prog
@@ -335,11 +331,11 @@ isSequenceOf :: Protocol -> State -> Sequence -> Bool
 isSequenceOf _     _       []       = True
 isSequenceOf proto current (c:rest) = eval current (proto c) && isSequenceOf proto (pointCall current c) rest
 
-knowledgeOfIn :: Agent -> State -> [Char]
-knowledgeOfIn a s = [ if s |= S a b then charAgent b else ' ' | b <- agentsOf (fst s) ] where
+knowledgeOfIn :: Agent -> State -> String
+knowledgeOfIn a s = [ if s |= S a b then charAgent b else ' ' | b <- agentsOf s ]
 
-metaKnowledgeOfIn :: Agent -> Protocol -> State -> [Char]
-metaKnowledgeOfIn a proto s = [ charFor b | b <- agentsOf (fst s) ] where
+metaKnowledgeOfIn :: Agent -> Protocol -> State -> String
+metaKnowledgeOfIn a proto s = [ charFor b | b <- agentsOf s ] where
   charFor b
     | s |= Neg (expert b)       = ' '
     | s |= K a proto Bot        = '_'
@@ -348,8 +344,8 @@ metaKnowledgeOfIn a proto s = [ charFor b | b <- agentsOf (fst s) ] where
 
 knowledgeLine :: State -> Protocol -> String
 knowledgeLine s proto = concat
-  [ "  " ++ (knowledgeOfIn a s ++ " " ++ metaKnowledgeOfIn a proto s)
-  | a <- agentsOf (fst s) ]
+  [ "  " ++ knowledgeOfIn a s ++ " " ++ metaKnowledgeOfIn a proto s
+  | a <- agentsOf s ]
 
 knowledgeOverview :: State -> Protocol -> IO ()
 knowledgeOverview (g,sigma) proto = do
