@@ -12,6 +12,11 @@ at m k = x where (Just x) = IntMap.lookup k m
 lfp :: Eq a => (a -> a) -> a -> a
 lfp f x = if f x == x then x else lfp f (f x)
 
+-- | Transitive Closure
+tcl :: Eq a => [a] -> (a -> a -> Bool) -> (a -> a -> Bool)
+tcl domain r x y = y `elem` lfp extend [x] where
+  extend zs = zs ++ [ newZ | z <- zs, newZ <- domain, r z newZ, newZ `notElem` zs ]
+
 finiteIterate :: Int -> (a -> a) -> a -> a
 finiteIterate 0 _ x = x
 finiteIterate k f x = finiteIterate (k-1) f (f x)
