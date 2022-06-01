@@ -1,0 +1,25 @@
+# thanks to https://github.com/rolandtritsch/haskell-aoc-2020
+
+on: [push]
+
+name: CI
+
+jobs:
+  build:
+    name: Build
+    runs-on: ubuntu-latest
+    steps:
+    - name: Cache
+      uses: actions/cache@v2
+      with:
+        key: stack
+        path: |
+          ~/.stack
+          ~/.stack-work
+    - uses: actions/checkout@v2
+    - name: Compile
+      run: stack --system-ghc test --no-run-tests
+    - name: Run tests
+      run: stack --system-ghc test
+    - name: Hlint
+      run: "curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s ."
