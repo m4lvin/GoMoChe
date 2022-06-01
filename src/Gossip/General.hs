@@ -11,6 +11,7 @@ import qualified Data.IntMap as IntMap
 
 import Gossip
 import Gossip.Internal
+import Control.Monad (when)
 
 -- This is the full language, protocols should only use a subset.
 
@@ -270,6 +271,7 @@ alwaysLocalSameFor g a history altHistory =
       , i /= a
       ]
 
+-- | Maximum number of calls that agents will consider possible.
 totalBound :: Int
 totalBound = 7
 
@@ -417,6 +419,7 @@ knowledgeLine s proto = concat
 
 knowledgeOverview :: State -> Protocol -> IO ()
 knowledgeOverview (m,g,sigma) proto = do
+  when (totalBound < length sigma) $ putStrLn "\n!!! WARNING: totalBound < length sigma !!!\n"
   putStr "  "
   putStrLn $ knowledgeLine (m,g,[]) proto
   mapM_ (\n -> do
