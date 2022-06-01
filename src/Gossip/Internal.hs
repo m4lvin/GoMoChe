@@ -38,5 +38,5 @@ prefixElem xs = any (\ys -> xs `isPrefixOf` ys)
 rep :: Eq a => [a] -> [a] -> [a] -> [a]
 rep _ _ []         = []
 rep a b s@(x:xs)
-  | isPrefixOf a s = b ++ rep a b (drop (length a) s)
-  | otherwise      = x  : rep a b xs
+  | a `isPrefixOf` s = b ++ rep a b (drop (length a) s)
+  | otherwise        = x  : rep a b xs

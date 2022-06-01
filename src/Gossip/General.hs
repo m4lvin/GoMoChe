@@ -50,7 +50,7 @@ variables = "zyxwvutsZYXWVUTS"
 
 type FormWithAgentVar = Agent -> Form
 instance Eq FormWithAgentVar where
-  (==) f g = (f 0 == g 0 && f 1 == g 1 && f 999 == g 999)
+  (==) f g = f 0 == g 0 && f 1 == g 1 && f 999 == g 999
 instance Show FormWithAgentVar where
   show f = ("(\\" ++ [c] ++ " -> " ++ rep (show n) [c] (show (f n))) ++ ")" where
     c = variables !! n
@@ -91,7 +91,7 @@ varLevelP (Test f) = varLevel f
 varLevelP (Call _ _) = 0
 varLevelP (Seq ps) = maximum (map varLevelP ps)
 varLevelP (Cup ps) = maximum (map varLevelP ps)
-varLevelP (CupAg varp) = 1 + (varLevelP (varp 999))
+varLevelP (CupAg varp) = 1 + varLevelP (varp 999)
 varLevelP (Star p) = varLevelP p
 
 -- useful abbreviations --
@@ -120,7 +120,7 @@ superExpert :: Agent -> Protocol -> Form
 superExpert a proto = K a proto allExperts
 
 allSuperExperts :: Protocol -> Form
-allSuperExperts proto = ForallAg (flip superExpert proto)
+allSuperExperts proto = ForallAg (`superExpert` proto)
 
 -- agent knows no other secrets than their own
 knowsOnlyOwn :: Agent -> Form
@@ -160,7 +160,7 @@ instance Ord Protocol where
   compare p1 p2 = compare (p1 (0,1)) (p2 (0,1))
 
 instance Show Protocol where
-  show p = "(\\("++[c]++","++[d]++") -> " ++ (rep (show n) [c] $ rep (show (n + 1)) [d] $ show (p (n,n+1))) ++ ")" where
+  show p = "(\\("++[c]++","++[d]++") -> " ++ rep (show n) [c] (rep (show (n + 1)) [d] $ show (p (n,n+1))) ++ ")" where
     n = varLevel (p (1,2))
     c = variables !! n
     d = variables !! (n + 1)
@@ -241,7 +241,7 @@ epistAlt a proto (g, history) =
 eval :: State -> Form -> Bool
 eval state (N a b  )    = b `IntSet.member` (fst (uncurry calls state) `at` a)
 eval state (S a b  )    = b `IntSet.member` (snd (uncurry calls state) `at` a)
-eval state (C a b  )    = (a,b) `elem` (snd state)
+eval state (C a b  )    = (a,b) `elem` snd state
 eval _     (Same a b)   = a == b
 eval _     Top          = True
 eval _     Bot          = False
@@ -320,7 +320,7 @@ isSuccSequence :: State -> Sequence -> Bool
 isSuccSequence (g,sigma) cs =  isSolved (calls g (sigma ++ cs))
 
 isSuperSuccSequence :: Protocol -> State -> Sequence -> Bool
-isSuperSuccSequence proto (g,sigma) cs = (g, (sigma ++ cs)) |= ForallAg (\a -> superExpert a proto)
+isSuperSuccSequence proto (g,sigma) cs = (g, sigma ++ cs) |= ForallAg (`superExpert` proto)
 
 compareSequences :: State -> [Protocol] -> [(Sequence,[Bool])]
 compareSequences s protos =

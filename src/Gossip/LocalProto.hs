@@ -34,7 +34,7 @@ isStronglySucc :: LocalProtocol -> Graph -> Bool
 isStronglySucc loproto gg = all (isSolved . calls gg) (localSequences loproto gg)
 
 isStronglyUnsucc :: LocalProtocol -> Graph -> Bool
-isStronglyUnsucc loproto gg = all (not . isSolved . calls gg) (localSequences loproto gg)
+isStronglyUnsucc loproto gg = not $ any (isSolved . calls gg) (localSequences loproto gg)
 
 solvableInits :: LocalProtocol -> Int -> [Graph]
 solvableInits loproto k = filter (isWeaklySucc loproto) (allInits k)
