@@ -20,6 +20,6 @@ jobs:
     - name: Compile
       run: stack --system-ghc test --no-run-tests
     - name: Run tests
-      run: stack --system-ghc test --test-arguments "+RTS -N -RTS"
+      run: stack --system-ghc test
     - name: Hlint
       run: "curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s ."

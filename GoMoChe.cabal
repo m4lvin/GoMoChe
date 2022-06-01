@@ -35,7 +35,7 @@ library
 test-suite results
   type:             exitcode-stdio-1.0
   main-is:          results.hs
-  ghc-options:      -Wall -threaded
+  ghc-options:      -Wall -threaded -with-rtsopts=-N
   hs-source-dirs:   test
   build-depends:    base
                   , GoMoChe
