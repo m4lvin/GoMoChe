@@ -1,10 +1,16 @@
 # GoMoChe - Gossip Model Checking
 
+[![CI status](https://github.com/m4lvin/GoMoChe/actions/workflows/ci.yml/badge.svg)](https://github.com/m4lvin/GoMoChe/actions/workflows/ci.yml)
+[![Gitpod Ready-to-Code](https://img.shields.io/badge/Gitpod-ready--to--code-blue?logo=gitpod)](https://gitpod.io/#https://github.com/m4lvin/GoMoChe)
+
 A Haskell tool to analyse (dynamic) gossip protocols, including an epistemic model checker.
 
-## Installation
+## Getting Started
 
-You should have the [Haskell Tool Stack](https://haskellstack.org) installed.
+Option A: For a quick try-out, [click here to open this repository in your browser via GitPod](https://gitpod.io/#https://github.com/m4lvin/GoMoChe) and run `stack ghci` in the terminal there.
+
+Option B: To use GoMoChe locally, you first need the [Haskell Tool Stack](https://haskellstack.org) installed.
+Then do the following:
 
     git clone https://github.com/m4lvin/GoMoChe.git
     cd GoMoChe
@@ -59,7 +65,7 @@ If you have graphviz installed, you can visualize gossip graphs like this:
 The file `test/results.hs` contains a test suite that also covers most examples.
 You can run it with `stack clean; stack test --coverage`.
 
-## Related references:
+## References
 
 - Hans van Ditmarsch, Malvin Gattinger, Louwe B. Kuijer, Pere Pardo:
   [Strengthening Gossip Protocols using Protocol-Dependent Knowledge](https://malv.in/2019/StrengtheningGossipProtocols.pdf)
