@@ -5,3 +5,6 @@ vscode:
   extensions:
     - haskell.haskell
     - justusadam.language-haskell
+
+tasks:
+  - command: stack ghci
