@@ -7,7 +7,7 @@ A Haskell tool to analyse (dynamic) gossip protocols, including an epistemic mod
 
 ## Getting Started
 
-Option A: For a quick try-out, [click here to open this repository in your browser via GitPod](https://gitpod.io/#https://github.com/m4lvin/GoMoChe) and run `stack ghci` in the terminal there.
+Option A: For a quick try-out, [click here to use GoMoChe in your browser via GitPod](https://gitpod.io/#https://github.com/m4lvin/GoMoChe), *wait* and use the terminal there.
 
 Option B: To use GoMoChe locally, you first need the [Haskell Tool Stack](https://haskellstack.org) installed.
 Then do the following:

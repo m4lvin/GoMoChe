@@ -7,4 +7,6 @@ vscode:
     - justusadam.language-haskell
 
 tasks:
-  - command: stack ghci
+  - name: Build and run in GHCI
+    init: stack build
+    command: stack ghci
