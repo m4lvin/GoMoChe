@@ -32,6 +32,11 @@ class DotAble a where
   svg x = withSystemTempDirectory "CKgossip" $ \tmpdir -> do
     _ <- runGraphviz (dot x) Svg (tmpdir ++ "/temp.svg")
     readFile (tmpdir ++ "/temp.svg")
+  pdf :: a -> IO ()
+  pdf x = do
+    _ <- runGraphviz (dot x) Pdf "tmp.pdf"
+    _ <- runInteractiveCommand "open tmp.pdf"
+    return ()
   pdfTo :: a -> FilePath-> IO FilePath
   pdfTo x = runGraphviz (dot x) Pdf
 
