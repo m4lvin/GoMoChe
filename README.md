@@ -21,7 +21,7 @@ Then do the following:
 
 List all call sequences permitted by the protocol `lns` on the graph `threeExample` defined in the module `Gossip.Examples`:
 
-    λ> mapM_ print $ sequences lns (threeExample,[])
+    GoMoChe> mapM_ print $ sequences lns (threeExample,[])
     [(0,1),(0,2),(1,2)]
     [(0,1),(1,2),(0,2)]
     [(0,1),(2,1),(0,2)]
@@ -30,35 +30,42 @@ List all call sequences permitted by the protocol `lns` on the graph `threeExamp
 
 Count how many of these call sequences are successful and unsuccessful:
 
-    λ> statistics lns (threeExample,[])
+    GoMoChe> statistics lns (threeExample,[])
     (3,2)
 
 The same, for another gossip graph given in short notation:
 
-    λ> statistics lns (parseGraph "01-12-231-3 I4",[])
+    GoMoChe> statistics lns (parseGraph "01-12-231-3 I4",[])
     (57,20)
 
 Evaluate a formula at a gossip state:
 
-    λ> eval (threeExample,[(0,1)]) (S 1 0)
+    GoMoChe> eval (threeExample,[(0,1)]) (S 1 0)
     True
-    λ> eval (threeExample,[(0,1)]) (S 1 2)
+    GoMoChe> eval (threeExample,[(0,1)]) (S 1 2)
     False
-    λ> eval (threeExample,[(0,1)]) (K 2 anyCall (S 1 0))
+    GoMoChe> eval (threeExample,[(0,1)]) (K 2 anyCall (S 1 0))
     True
-    λ> eval (threeExample,[(0,1)]) (K 2 lns (S 1 0))
+    GoMoChe> eval (threeExample,[(0,1)]) (K 2 lns (S 1 0))
     True
-    λ> eval (threeExample,[(0,1),(1,2)]) (S 0 2)
+    GoMoChe> eval (threeExample,[(0,1),(1,2)]) (S 0 2)
     False
-    λ> eval (threeExample,[(0,1),(1,2)]) (S 2 0)
+    GoMoChe> eval (threeExample,[(0,1),(1,2)]) (S 2 0)
     True
 
 If you have graphviz installed, you can visualize gossip graphs like this:
 
-    λ> dispDot $ diamondExample
+    GoMoChe> dispDot $ diamondExample
 
-![](diamondExample.svg)
+![](doc/diamondExample.svg)
 
+Also execution trees can be visualized, for example:
+
+    GoMoChe> dispTreeWith [2] 2 1 lns (tree lns (nExample,[]))
+
+![](doc/nExample_2_2_1.svg)
+
+Note: In GitPod, use `pdf...` functions instead of `disp...`.
 
 ## Tests
 
