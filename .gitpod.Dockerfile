@@ -1,5 +1,8 @@
 FROM gitpod/workspace-full
 
+# Install GraphViz
+RUN sudo apt-get install -y graphviz
+
 # Install Stack
 RUN curl -sSL https://get.haskellstack.org/ | sh
 
