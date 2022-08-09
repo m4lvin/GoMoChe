@@ -5,6 +5,7 @@ vscode:
   extensions:
     - haskell.haskell
     - justusadam.language-haskell
+    - tomoki1207.pdf
 
 tasks:
   - name: Build and run in GHCI

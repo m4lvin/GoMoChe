@@ -32,6 +32,8 @@ class DotAble a where
   svg x = withSystemTempDirectory "CKgossip" $ \tmpdir -> do
     _ <- runGraphviz (dot x) Svg (tmpdir ++ "/temp.svg")
     readFile (tmpdir ++ "/temp.svg")
+  pdfTo :: a -> FilePath-> IO FilePath
+  pdfTo x = runGraphviz (dot x) Pdf
 
 runAndWait :: String -> IO ()
 runAndWait command = do
@@ -98,6 +100,12 @@ dotTreeWith drawAgents showLimit rankLimit proto tpc@(Node (g,_) _) =
 
 dispTreeWith :: [Agent] -> Int -> Int -> Protocol -> ExecutionTree -> IO ()
 dispTreeWith drawAgents showLimit rankLimit proto t = dispDot (drawAgents,showLimit,rankLimit,proto,t)
+
+pdfTreeWith :: [Agent] -> Int -> Int -> Protocol -> ExecutionTree -> IO ()
+pdfTreeWith drawAgents showLimit rankLimit proto t = do
+  _ <- pdfTo (drawAgents,showLimit,rankLimit,proto,t) "tmp.pdf"
+  _ <- runInteractiveCommand "open tmp.pdf"
+  return ()
 
 instance DotAble ([Agent],Int,Int,Protocol,ExecutionTree) where
   dot (drawAgents,showLimit,rankLimit,proto,t) = dotTreeWith drawAgents showLimit rankLimit proto t

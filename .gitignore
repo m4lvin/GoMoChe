@@ -27,3 +27,4 @@ cabal.project.local
 *.synctex.gz
 *.synctex.gz(busy)
 stack.yaml.lock
+tmp.*
