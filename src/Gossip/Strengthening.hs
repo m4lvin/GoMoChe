@@ -19,6 +19,10 @@ strengStepSoft p (a,b) = Conj [ p (a,b) , HatK a p $ Box (Call a b) (Disj [allEx
 super :: Protocol -> Protocol
 super proto (x, y) = Conj [ Neg (superExpert x cmo) , proto (x,y) ]
 
+-- | Only consider calls ij where i<j.
+wlog :: Protocol -> Protocol
+wlog proto (x, y) = if x < y then proto (x, y) else Bot
+
 -- count the number of (successful, not successful) sequences
 statistics :: Protocol -> State -> (Int,Int)
 statistics proto (g,sigma) =

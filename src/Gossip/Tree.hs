@@ -26,6 +26,13 @@ tree proto point@(g,sigma) =
   where
     goOnWith c = tree proto (g,sigma ++ [c])
 
+-- | Generate execution tree for a general protocol up to given depth.
+treeUpTo :: Int -> Protocol -> State -> ExecutionTree
+treeUpTo k proto point@(g,sigma) =
+  Node point [ (c, goOnWith c) | k > 0, c <- allowedCalls proto point ]
+  where
+    goOnWith c = treeUpTo (k-1) proto (g,sigma ++ [c])
+
 -- | summarize a tree to numbers pf (solved, stuck) branches
 sumTree :: ExecutionTree -> (Int,Int)
 sumTree (Node n []) | isSolved (uncurry calls n) = (1,0)
