@@ -228,6 +228,8 @@ localSameFor a s s' = (fst s `at` a) == (fst s' `at` a) && (snd s `at` a) == (sn
 -- Depends on the commonly known protocol.
 epistAlt :: Agent -> Protocol -> State -> [State]
 -- Synchronous version:
+epistAlt a _     (_   , g, _      )
+  | a `notElem` agentsOf g = error $ show a ++ " does not exist in " ++ show g
 epistAlt _ _     (Sync, g, []     ) = [ (Sync, g, []) ] -- initial graph is common knowledge!
 epistAlt a proto (Sync, g, history) =
   let

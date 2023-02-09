@@ -201,10 +201,16 @@ main = hspec $ parallel $ do
       it ("ASync: " ++ ppSequence sigma ++ " is NOT super successful (ANY)") $
         (ASync, totalInit 4, sigma) |= Neg (allSuperExperts (wlog anyCall))
 
-  describe "Lucky Calls" $ do
+  describe "Lucky Calls and Super Experts" $ do
     let sigma = parseSequence "ac;ad;ac;bc;ac" in
       it ("Agent 0 is lucky in last call of " ++ ppSequence sigma) $
         isLucky (ASync, totalInit 4, sigma) (wlog anyCall) 0
+    it "n=4 agents cannot reach K_a Exp_A in 4 calls" $
+      all (\sigma -> not $ (ASync, totalInit 4, sigma) |= K 0 anyCall allExperts)
+          (sequencesUpTo anyCall (ASync, totalInit 4, []) 4)
+    it "n=4 agents can reach K_a Exp_A in 5 calls" $
+      any (\sigma -> (ASync, totalInit 4, sigma) |= K 0 anyCall allExperts)
+          (sequencesUpTo anyCall (ASync, totalInit 4, []) 5)
 
 -- | Check that epistAlt describes a (in proto) reflexive, transitive, (in proto) symmetric relation.
 checkEpistAlt :: Agent -> Protocol -> State -> [Bool]
