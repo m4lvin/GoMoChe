@@ -407,12 +407,21 @@ knowledgeOfIn :: Agent -> State -> String
 knowledgeOfIn a s = [ if s |= S a b then charAgent b else ' ' | b <- agentsOf s ]
 
 metaKnowledgeOfIn :: Agent -> Protocol -> State -> String
-metaKnowledgeOfIn a proto s = [ charFor b | b <- agentsOf s ] where
+metaKnowledgeOfIn a proto s@(m,g,cs) = [ charFor b | b <- agentsOf s ] where
   charFor b
     | s |= Neg (expert b)       = ' '
     | s |= K a proto Bot        = '_'
+    -- optimization cases, faster to compute:
+    | b == a                    = toUpper (charAgent b)
+    | directlyLearned b         = toUpper (charAgent b)
+    -- general case, hard to compute:
     | s |= K a proto (expert b) = toUpper (charAgent b)
     | otherwise                 = ' '
+  directlyLearned b = or [ (m,g,subcs) |= expert b
+                         | n <- [(length (agentsOf g))..(length cs)]
+                         , let subcs = take n cs
+                         , b `isin` last subcs
+                         , a `isin` last subcs ]
 
 knowledgeLine :: State -> Protocol -> String
 knowledgeLine s proto = concat
