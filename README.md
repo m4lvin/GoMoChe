@@ -9,13 +9,7 @@ A Haskell tool to analyse (dynamic) gossip protocols, including an epistemic mod
 
 Option A: For a quick try-out, [click here to use GoMoChe in your browser via GitPod](https://gitpod.io/#https://github.com/m4lvin/GoMoChe), *wait* and use the terminal there.
 
-Option B: To use GoMoChe locally, you first need the [Haskell Tool Stack](https://haskellstack.org) installed.
-Then do the following:
-
-    git clone https://github.com/m4lvin/GoMoChe.git
-    cd GoMoChe
-    stack build
-    stack ghci
+Option B: To use GoMoChe locally, you need the [Haskell Tool Stack](https://haskellstack.org). Then do `stack build` and `stack ghci` inside this folder.
 
 ## Usage Examples
 
@@ -65,7 +59,7 @@ Also execution trees can be visualized, for example:
 
 ![](doc/nExample_2_2_1.svg)
 
-Note: In GitPod, use `pdf...` functions instead of `disp...`.
+Note: In GitPod, use `pdf` and `pdfTreeWith` instead of `dispDot` and `dispTreeWidth`.
 
 ## Tests
 

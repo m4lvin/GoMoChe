@@ -5,9 +5,11 @@ vscode:
   extensions:
     - haskell.haskell
     - justusadam.language-haskell
-    - tomoki1207.pdf
+    - anwar.papyrus-pdf
 
 tasks:
+  - name: Open the README
+    command: open README.md
   - name: Build and run in GHCI
     init: stack build
     command: stack ghci
