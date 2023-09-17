@@ -16,12 +16,17 @@ jobs:
         path: |
           ~/.stack
           ~/.stack-work
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
     - name: Compile
       run: stack --system-ghc test --no-run-tests
     - name: Run tests
       run: stack --system-ghc test
     - name: Run benchmarks
       run: stack --system-ghc bench
+  hlint:
+    name: Hlint
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
     - name: Hlint
       run: "curl -sSL https://raw.github.com/ndmitchell/hlint/master/misc/run.sh | sh -s ."

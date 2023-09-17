@@ -179,5 +179,5 @@ checkEpistAlt a proto here@(g, sigma)  = [reflexive, transitive, symmetric] wher
   reachables = epistAlt a proto here
   inProtocol = isSequenceOf proto (g, []) sigma
   reflexive = not inProtocol || (here `elem` reachables)
-  transitive = all (`elem` reachables) $ concatMap (epistAlt a proto) reachables
+  transitive = all (all (`elem` reachables) . epistAlt a proto) reachables
   symmetric = not inProtocol || all (elem here . epistAlt a proto) reachables
