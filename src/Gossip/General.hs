@@ -401,10 +401,10 @@ isSequenceOf :: Protocol -> State -> Sequence -> Bool
 isSequenceOf _     _       []       = True
 isSequenceOf proto current (c:rest) = eval current (proto c) && isSequenceOf proto (pointCall current c) rest
 
-knowledgeOfIn :: Agent -> State -> [Char]
+knowledgeOfIn :: Agent -> State -> String
 knowledgeOfIn a s = [ if s |= S a b then charAgent b else ' ' | b <- agentsOf s ]
 
-metaKnowledgeOfIn :: Agent -> Protocol -> State -> [Char]
+metaKnowledgeOfIn :: Agent -> Protocol -> State -> String
 metaKnowledgeOfIn a proto s = [ charFor b | b <- agentsOf s ] where
   charFor b
     | s |= Neg (expert b)       = ' '
