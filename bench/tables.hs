@@ -11,9 +11,9 @@ import Gossip.Internal (finiteIterate)
 main :: IO ()
 main = do
   writeFile "gossip-n-table.tex" $
-    texCompareSequences (nExample,[]) nProtos
+    texCompareSequences (Sync,nExample,[]) nProtos
   writeFile "gossip-diamond-table.tex" $
-    texCompareSequences (diamondExample,[(2,0)]) diamondProtos
+    texCompareSequences (Sync,diamondExample,[(2,0)]) diamondProtos
 
 nProtos :: [Protocol]
 nProtos =
