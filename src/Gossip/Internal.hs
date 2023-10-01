@@ -7,7 +7,9 @@ import Data.Set (Set)
 import qualified Data.Set as Set
 
 at :: IntMap b -> Int -> b
-at m k = x where (Just x) = IntMap.lookup k m
+at m k = x where x = case IntMap.lookup k m of
+                       Just this -> this
+                       Nothing -> error "at failed"
 
 lfp :: Eq a => (a -> a) -> a -> a
 lfp f x = if f x == x then x else lfp f (f x)

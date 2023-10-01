@@ -28,10 +28,10 @@ tree proto point@(m,g,sigma) =
 
 -- | Generate execution tree for a general protocol up to given depth.
 treeUpTo :: Int -> Protocol -> State -> ExecutionTree
-treeUpTo k proto point@(g,sigma) =
+treeUpTo k proto point@(m,g,sigma) =
   Node point [ (c, goOnWith c) | k > 0, c <- allowedCalls proto point ]
   where
-    goOnWith c = treeUpTo (k-1) proto (g,sigma ++ [c])
+    goOnWith c = treeUpTo (k-1) proto (m,g,sigma ++ [c])
 
 -- | summarize a tree to numbers pf (solved, stuck) branches
 sumTree :: ExecutionTree -> (Int,Int)
