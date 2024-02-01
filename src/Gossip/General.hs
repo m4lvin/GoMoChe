@@ -438,3 +438,41 @@ knowledgeOverview (m,g,sigma) proto = do
             putStr (charCall (last history))
             putStrLn $ knowledgeLine s proto
         ) [1 .. length sigma]
+
+-- * Bisimulations
+
+type Bisimulation = [(Sequence,Sequence)]
+
+isBisimulation :: Mode -> Graph -> Bisimulation -> Bool
+isBisimulation m g b =
+  all (\xy -> facts xy && all (zig xy) (agentsOf g) && all (zag xy) (agentsOf g)) b where
+   facts (sigma,tau) = calls g sigma == calls g tau -- same resulting graph
+   zig (x, y) i =
+     and [ or [ (x',y') `elem` b | (_,_,y') <- epistAlt i anyCall (m, g, y) ]
+         | (_,_,x') <- epistAlt i anyCall (m, g, x) ]
+   zag (x, y) i =
+     and [ or [ (x',y') `elem` b | (_,_,x') <- epistAlt i anyCall (m, g, x) ]
+         | (_,_,y') <- epistAlt i anyCall (m, g, y) ]
+
+isBisimulationBetween :: State -> State -> Bisimulation -> Bool
+isBisimulationBetween (m1, g1, sigma) (m2, g2, tau) b =
+  (sigma,tau) `elem` b
+  &&
+  m1 == m2
+  &&
+  g1 == g2
+  &&
+  (m1 == ASync || length sigma == length tau)
+  &&
+  isBisimulation m1 g1 b
+
+-- | Very naive brute-force approach to find a bisimulation.
+findBisimulationSlow :: State -> State -> Maybe Bisimulation
+findBisimulationSlow s1 s2@(m,g,tau) =
+  find (isBisimulationBetween s1 s2)
+       (allRelationsOver (sequencesUpTo anyCall (m,g,[]) (length tau)))
+  where
+    pairsOf :: [a] -> [(a,a)]
+    pairsOf xs = [ (x,y) | x <- xs, y <- xs ]
+    allRelationsOver :: [a] -> [[(a,a)]]
+    allRelationsOver = subsequences . pairsOf
