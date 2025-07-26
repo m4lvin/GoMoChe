@@ -16,6 +16,7 @@ library
   exposed-modules:  Gossip
                   , Gossip.Caas
                   , Gossip.Examples
+                  , Gossip.Examples.Epistemicity
                   , Gossip.General
                   , Gossip.LocalProto
                   , Gossip.Random
