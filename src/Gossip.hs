@@ -158,4 +158,6 @@ ppGraphShort (n,s)
 parseGraph :: String -> Graph
 parseGraph ('★':kchar) = totalInit (read kchar)
 parseGraph graphStr = (parseRel nStr, parseRel sStr) where
-  [nStr, sStr] = splitWhere ' ' graphStr
+  (nStr, sStr) = case splitWhere ' ' graphStr of
+    [a, b] -> (a,b)
+    _ -> error "Could not parse graph."

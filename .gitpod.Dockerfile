@@ -15,4 +15,4 @@ ENV PATH="/workspace/.local/bin:/workspace/.cabal/bin:/workspace/.ghcup/bin:${PA
 RUN curl --proto '=https' --tlsv1.2 -sSf https://get-ghcup.haskell.org | BOOTSTRAP_HASKELL_NONINTERACTIVE=1 BOOTSTRAP_HASKELL_MINIMAL=1 sh
 
 # Build once to get compiler and libs
-RUN stack setup --resolver=lts-16.31
+RUN stack setup --resolver=lts-23.27

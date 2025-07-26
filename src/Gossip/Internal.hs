@@ -6,8 +6,11 @@ import qualified Data.IntMap as IntMap
 import Data.Set (Set)
 import qualified Data.Set as Set
 
+-- | Unsafe flipped version of @Data.IntMap.lookup@.
 at :: IntMap b -> Int -> b
-at m k = x where (Just x) = IntMap.lookup k m
+at m k = case IntMap.lookup k m of
+  Just x -> x
+  _ -> error "Element not found."
 
 lfp :: Eq a => (a -> a) -> a -> a
 lfp f x = if f x == x then x else lfp f (f x)

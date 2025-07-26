@@ -96,8 +96,9 @@ dotTreeWith drawAgents showLimit rankLimit proto tpc@(Node (g,_) _) =
       sequencesOf :: ExecutionTree -> [Sequence]
       sequencesOf (Node _ cts) = [] : [ c:h | (c, tpc') <- take 100 cts, h <- sequencesOf tpc' ]
       rankTheSame :: [State] -> [GenGV.DotStatement String]
-      rankTheSame ns = [ GenGV.SG  GenGV.DotSG  { GenGV.isCluster = False
-                                                , GenGV.subGraphID = Just (Str (pack $ "ranking-" ++ show (length (snd $ head ns))))
+      rankTheSame [] = error "No states!"
+      rankTheSame ns@(n:_) = [ GenGV.SG  GenGV.DotSG  { GenGV.isCluster = False
+                                                , GenGV.subGraphID = Just (Str (pack $ "ranking-" ++ show (length (snd n))))
                                                 , GenGV.subGraphStmts = Seq.fromList $
                                                         GenGV.GA (GraphAttrs [Rank SameRank]) :
                                                         [ GenGV.DN $ DotNode (myNodeID n') [] | n' <- ns ]
