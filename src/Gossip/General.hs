@@ -184,6 +184,11 @@ pig (x,y) = HatK x anyCall $
 
 type State = (Graph,Sequence)
 
+-- | Shorthand combining @totalInit@ and @parseSequence@.
+after :: String -> State
+after s = (totalInit n, parseSequence s) where
+  n = length $ nub (filter (/= ';') $ map toUpper s)
+
 currentGraph :: State -> Graph
 currentGraph = uncurry calls
 

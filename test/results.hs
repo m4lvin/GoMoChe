@@ -95,7 +95,7 @@ main = hspec $ parallel $ do
     describe "nExample" $ do
       it "LNS◇◇◇◇◇ (4,8)" $ statistics (finiteIterate 5 strengStepSoft lns) (nExample,[]) `shouldBe` (4,8)
       it "LNS◽◽◽◽  (0,0)" $ statistics (finiteIterate 4 strengStepHard lns) (nExample,[]) `shouldBe` (0,0)
-      it "LNS◆ == LNS◆◆"  $ let f k = sequences (finiteIterate k strengSoft lns) (nExample,[]) in f 1 `shouldBe` f 2
+      it "LNS◆ == LNS◆◆"  $ let fn k = sequences (finiteIterate k strengSoft lns) (nExample,[]) in fn 1 `shouldBe` fn 2
 
     describe "diamondExample" $ do
       it "LNS      (48,44)" $ statistics lns                                  (diamondExample,[]) `shouldBe` (48,44)
@@ -105,7 +105,7 @@ main = hspec $ parallel $ do
       it "LNS◾◾◾   ( 0, 0)" $ statistics (finiteIterate 3 strengHard lns)     (diamondExample,[]) `shouldBe` ( 0, 0)
       it "LNS◆     (48, 8)" $ statistics (strengSoft lns)                     (diamondExample,[]) `shouldBe` (48, 8)
       it "LNS◆◆    (48, 8)" $ statistics (strengSoft $ strengSoft lns)        (diamondExample,[]) `shouldBe` (48, 8)
-      it "LNS◆ == LNS◆◆"    $ let f k = sequences (finiteIterate k strengSoft lns) (diamondExample,[]) in f 1 `shouldBe` f 2
+      it "LNS◆ == LNS◆◆"    $ let fn k = sequences (finiteIterate k strengSoft lns) (diamondExample,[]) in fn 1 `shouldBe` fn 2
       it "LNS◽     (24,36)" $ statistics (strengStepHard lns)                 (diamondExample,[]) `shouldBe` (24,36)
       it "LNS◽◽    ( 8,16)" $ statistics (finiteIterate 2 strengStepHard lns) (diamondExample,[]) `shouldBe` ( 8,16)
       it "LNS◽◽◽   ( 8, 4)" $ statistics (finiteIterate 3 strengStepHard lns) (diamondExample,[]) `shouldBe` ( 8, 4)
@@ -114,7 +114,7 @@ main = hspec $ parallel $ do
       it "LNS◇     (48,36)" $ statistics (strengStepSoft lns)                 (diamondExample,[]) `shouldBe` (48,36)
       it "LNS◇◇    (48,32)" $ statistics (finiteIterate 2 strengStepSoft lns) (diamondExample,[]) `shouldBe` (48,32)
       it "LNS◇◇◇   (48,32)" $ statistics (finiteIterate 3 strengStepSoft lns) (diamondExample,[]) `shouldBe` (48,32)
-      it "LNS◇◇ == LNS◇◇◇"  $ let f k = sequences (finiteIterate k strengStepSoft lns) (diamondExample,[]) in f 2 `shouldBe` f 3
+      it "LNS◇◇ == LNS◇◇◇"  $ let fn k = sequences (finiteIterate k strengStepSoft lns) (diamondExample,[]) in fn 2 `shouldBe` fn 3
       it "LNS◇◽◽◽  (16, 0)" $ statistics (finiteIterate 3 strengStepHard $ strengStepSoft lns) (diamondExample,[]) `shouldBe` (16,0)
       it "LNS◇◽◾   (16, 0)" $ statistics (strengHard $ strengStepHard $ strengStepSoft lns)    (diamondExample,[]) `shouldBe` (16,0)
       it "diamondProtoOld (32,0)" $ statistics diamondProtoOld (diamondExample,[]) `shouldBe` (32,0)
@@ -175,9 +175,9 @@ main = hspec $ parallel $ do
 
 -- | Check that epistAlt describes a (in proto) reflexive, transitive, (in proto) symmetric relation.
 checkEpistAlt :: Agent -> Protocol -> State -> [Bool]
-checkEpistAlt a proto here@(g, sigma)  = [reflexive, transitive, symmetric] where
-  reachables = epistAlt a proto here
+checkEpistAlt i proto here@(g, sigma)  = [reflexive, transitive, symmetric] where
+  reachables = epistAlt i proto here
   inProtocol = isSequenceOf proto (g, []) sigma
   reflexive = not inProtocol || (here `elem` reachables)
-  transitive = all (all (`elem` reachables) . epistAlt a proto) reachables
-  symmetric = not inProtocol || all (elem here . epistAlt a proto) reachables
+  transitive = all (all (`elem` reachables) . epistAlt i proto) reachables
+  symmetric = not inProtocol || all (elem here . epistAlt i proto) reachables
